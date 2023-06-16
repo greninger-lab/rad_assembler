@@ -1,0 +1,8 @@
+author: Jeff Furlong
+description: A pipeline for assembling and annotating CMV genomes.
+name: rad
+skip:
+- ci
+- github_badges
+- igenomes
+- nf_core_configs
