@@ -40,7 +40,7 @@ process SUMMARY {
     num_cs_consensus=`grep -v "^>" ${consensus} | tr -c -d C | wc -c`
     num_gs_consensus=`grep -v "^>" ${consensus} | tr -c -d G | wc -c`
     num_ts_consensus=`grep -v "^>" ${consensus} | tr -c -d T | wc -c`
-    num_non_ns_ambiguous=\$(python3 -c "int(\${consensus_length})-int(\${num_as_consensus})-int(\${num_cs_consensus})-int(\${num_gs_consensus})-int(\${num_ts_consensus})-int(\${num_ns_consensus})")
+    num_non_ns_ambiguous=\$(python3 -c "print(int(\$consensus_length)-int(\$num_as_consensus)-int(\$num_cs_consensus)-int(\$num_gs_consensus)-int(\$num_ts_consensus)-int(\$num_ns_consensus))")
 
     echo "sample_name\traw_reads\ttrimmed_reads\tpct_reads_trimmed\tmapped_reads\tpct_reads_mapped\tpct_genome_covered\tmean_genome_coverage\tconsensus_length\tnum_ns\tnum_ambiguous" > ${prefix}.summary.tsv
     echo "${prefix}\t\${raw_reads}\t\${trimmed_reads}\t\${pct_reads_trimmed}\t\${mapped_reads}\t\${pct_reads_mapped}\t\${pct_genome_covered}\t\${mean_genome_coverage}\t\${consensus_length}\t\${num_ns_consensus}\t\${num_non_ns_ambiguous}" >> ${prefix}.summary.tsv

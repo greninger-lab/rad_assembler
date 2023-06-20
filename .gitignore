@@ -10,3 +10,4 @@ testing*
 *.csv
 nextflow_aws.config
 *.gb
+aws_file_list.txt

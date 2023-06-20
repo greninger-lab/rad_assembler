@@ -22,7 +22,7 @@ process GENBANK_TO_FASTA {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        mugsy: \$(echo 'mugsy 1r2.3')
+        biopython 1.75
     END_VERSIONS
     """
 }

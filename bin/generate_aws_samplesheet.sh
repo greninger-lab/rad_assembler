@@ -10,6 +10,6 @@ IFS=$'\n\r'
 for line in $(cat aws_file_list.txt | grep "${r1_ext}")
 do
 	base_untrimmed=`basename $line $r1_ext`
-    base=${base_untrimmed%%_*}
+        base=${base_untrimmed%%$r1_ext*}
 	echo "${base},${aws_bucket}${line},${aws_bucket}${line/$r1_ext/$r2_ext}" >> ${run_name}_samplesheet.csv 
 done

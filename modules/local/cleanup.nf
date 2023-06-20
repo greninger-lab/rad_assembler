@@ -18,7 +18,7 @@ process CLEANUP {
     script:
     def args = task.ext.args ?: ''
     """
-    echo "sample_name\trsv_subtype\traw_reads\ttrimmed_reads\tpct_reads_trimmed\tmapped_reads\tpct_reads_mapped\tpct_genome_covered\tmean_genome_coverage\tconsensus_length\tnum_ns\tnum_ambiguous" > summary.tsv
+    echo "sample_name\traw_reads\ttrimmed_reads\tpct_reads_trimmed\tmapped_reads\tpct_reads_mapped\tpct_genome_covered\tmean_genome_coverage\tconsensus_length\tnum_ns\tnum_ambiguous" > summary.tsv
     awk '(NR == 2) || (FNR > 1)' *.summary.tsv >> summary.tsv 
     
     cat <<-END_VERSIONS > versions.yml
