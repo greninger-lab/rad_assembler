@@ -145,8 +145,7 @@ workflow RAD {
 	)
 
     FASTQC_TRIMMED (
-        BBDUK_L.out.reads,
-        []
+        BBDUK_L.out.reads
     )
 
     SPADES (
