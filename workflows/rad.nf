@@ -72,10 +72,10 @@ include { BOWTIE2_BUILD as BOWTIE2_BUILD_NEW_REFERENCE } from '../modules/nf-cor
 include { BOWTIE2_BUILD as BOWTIE2_BUILD_REFERENCE } from '../modules/nf-core/bowtie2/build/main'
 include { PROKKA } from '../modules/nf-core/prokka/main'
 include { BWA_INDEX } from '../modules/nf-core/bwa/index/main'
-include { BBMAP_BBDUK AS BBDUK_R } from '../modules/nf-core/bbmap/bbduk/main'
-include { BBMAP_BBDUK AS BBDUK_L } from '../modules/nf-core/bbmap/bbduk/main'
-include { FASTQC AS FASTQC_RAW } from '../modules/nf-core/fastqc/main'
-include { FASTQC AS FASTQC_TRIMMED } from '../modules/nf-core/fastqc/main'
+include { BBMAP_BBDUK as BBDUK_R } from '../modules/nf-core/bbmap/bbduk/main'
+include { BBMAP_BBDUK as BBDUK_L } from '../modules/nf-core/bbmap/bbduk/main'
+include { FASTQC as FASTQC_RAW } from '../modules/nf-core/fastqc/main'
+include { FASTQC as FASTQC_TRIMMED } from '../modules/nf-core/fastqc/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
