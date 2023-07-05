@@ -70,11 +70,12 @@ include { LAST_MAFCONVERT } from '../modules/nf-core/last/mafconvert/main'
 include { GUNZIP as GUNZIP_MAF_TO_SAM } from '../modules/nf-core/gunzip/main'
 include { BOWTIE2_BUILD as BOWTIE2_BUILD_NEW_REFERENCE } from '../modules/nf-core/bowtie2/build/main'
 include { BOWTIE2_BUILD as BOWTIE2_BUILD_REFERENCE } from '../modules/nf-core/bowtie2/build/main'
-include { PROKKA } from '../modules/nf-core/prokka/main' 
+include { PROKKA } from '../modules/nf-core/prokka/main'
 include { BWA_INDEX } from '../modules/nf-core/bwa/index/main'
-include { BBMAP_BBDUK } from '../modules/nf-core/bbmap/bbduk/main'
-include { FASTQC AS FASTQC_RAW } from '../modules/nf-core/modules/fastqc/main'
-include { FASTQC AS FASTQC_TRIMMED } from '../modules/nf-core/modules/fastqc/main'
+include { BBMAP_BBDUK AS BBDUK_R } from '../modules/nf-core/bbmap/bbduk/main'
+include { BBMAP_BBDUK AS BBDUK_L } from '../modules/nf-core/bbmap/bbduk/main'
+include { FASTQC AS FASTQC_RAW } from '../modules/nf-core/fastqc/main'
+include { FASTQC AS FASTQC_TRIMMED } from '../modules/nf-core/fastqc/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -124,17 +125,28 @@ workflow RAD {
         params.skip_fastqc
     )
     */
+
+    BBDUK_R (
+        INPUT_CHECK.out.reads,
+        []
+    )
     
+    BBDUK_L (
+        BBDUK_R.out.reads,
+        []
+    )
+
 	FASTQ_ALIGN_BOWTIE2 ( 
-        FASTQC_RAW.out.reads,
-        FASTQC_RAW.out.reads.map { [it[0]] }.combine(ch_bowtie2_index),
+        BBDUK_L.out.reads,
+        BBDUK_L.out.reads.map { [it[0]] }.combine(ch_bowtie2_index),
 		params.save_bowtie2_unaligned,
 		params.sort_bowtie2_bam,
-        FASTQC_RAW.out.reads.map { [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta)
+        BBDUK_L.out.reads.map { [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta)
 	)
 
     FASTQC_TRIMMED (
-        FASTQ_TRIM_FASTP_FASTQC.out.reads.map { [it[0], it[1]]}
+        BBDUK_L.out.reads,
+        []
     )
 
     SPADES (
