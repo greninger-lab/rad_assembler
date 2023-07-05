@@ -149,7 +149,7 @@ workflow RAD {
     )
 
     SPADES (
-        FASTQ_TRIM_FASTP_FASTQC.out.reads.map { [it[0], it[1]]}
+        BBDUK_L.out.reads
     )
 
     GUNZIP (
@@ -191,11 +191,11 @@ workflow RAD {
     )
 
 	FASTQ_ALIGN_BOWTIE2_NEW_REF ( 
-        FASTQ_TRIM_FASTP_FASTQC.out.reads,
-        FASTQ_TRIM_FASTP_FASTQC.out.reads.map { [it[0]] }.join(BOWTIE2_BUILD_NEW_REFERENCE.out.index),
+        BBDUK_L.out.reads,
+        BBDUK_L.out.reads.map { [it[0]] }.join(BOWTIE2_BUILD_NEW_REFERENCE.out.index),
 		params.save_bowtie2_unaligned,
 		params.sort_bowtie2_bam,
-        FASTQ_TRIM_FASTP_FASTQC.out.reads.map { [it[0]] }.join(MAKE_REFERENCE.out.new_ref)
+        BBDUK_L.out.reads.map { [it[0]] }.join(MAKE_REFERENCE.out.new_ref)
 	)
 
     GENERATE_CONSENSUS (
@@ -211,7 +211,7 @@ workflow RAD {
         []
     )
 
-    FASTQ_TRIM_FASTP_FASTQC.out.trim_log
+    BBDUK_L.out.log
         .join(FASTQ_ALIGN_BOWTIE2_NEW_REF.out.bam)
         .join(FASTQ_ALIGN_BOWTIE2_NEW_REF.out.bai)
         .join(GENERATE_CONSENSUS.out.consensus)
