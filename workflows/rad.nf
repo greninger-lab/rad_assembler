@@ -46,7 +46,7 @@ include { CLEANUP } from '../modules/local/cleanup'
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 include { INPUT_CHECK } from '../subworkflows/local/input_check'
-include { FASTQ_TRIM_FASTP_FASTQC     } from '../subworkflows/nf-core/fastq_trim_fastp_fastqc/main'
+//include { FASTQ_TRIM_FASTP_FASTQC     } from '../subworkflows/nf-core/fastq_trim_fastp_fastqc/main'
 include { FASTQ_ALIGN_BOWTIE2		  } from '../subworkflows/nf-core/fastq_align_bowtie2/main'
 include { FASTQ_ALIGN_BOWTIE2 as FASTQ_ALIGN_BOWTIE2_NEW_REF } from '../subworkflows/nf-core/fastq_align_bowtie2/main'
 /*
@@ -71,7 +71,10 @@ include { GUNZIP as GUNZIP_MAF_TO_SAM } from '../modules/nf-core/gunzip/main'
 include { BOWTIE2_BUILD as BOWTIE2_BUILD_NEW_REFERENCE } from '../modules/nf-core/bowtie2/build/main'
 include { BOWTIE2_BUILD as BOWTIE2_BUILD_REFERENCE } from '../modules/nf-core/bowtie2/build/main'
 include { PROKKA } from '../modules/nf-core/prokka/main' 
-include { BWA_INDEX } from '../modules/nf-core/bwa/index/main' 
+include { BWA_INDEX } from '../modules/nf-core/bwa/index/main'
+include { BBMAP_BBDUK } from '../modules/nf-core/bbmap/bbduk/main'
+include { FASTQC AS FASTQC_RAW } from '../modules/nf-core/modules/fastqc/main'
+include { FASTQC AS FASTQC_TRIMMED } from '../modules/nf-core/modules/fastqc/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,6 +111,10 @@ workflow RAD {
 
     ch_bowtie2_index = BOWTIE2_BUILD_REFERENCE.out.index.map{ [it[1]] }
 
+    FASTQC_RAW (
+        INPUT_CHECK.out.reads
+    )
+    /*
     FASTQ_TRIM_FASTP_FASTQC (
         INPUT_CHECK.out.reads,
         params.adapter_fasta,
@@ -116,14 +123,19 @@ workflow RAD {
         params.skip_fastp,
         params.skip_fastqc
     )
+    */
     
 	FASTQ_ALIGN_BOWTIE2 ( 
-        FASTQ_TRIM_FASTP_FASTQC.out.reads,
-        FASTQ_TRIM_FASTP_FASTQC.out.reads.map { [it[0]] }.combine(ch_bowtie2_index),
+        FASTQC_RAW.out.reads,
+        FASTQC_RAW.out.reads.map { [it[0]] }.combine(ch_bowtie2_index),
 		params.save_bowtie2_unaligned,
 		params.sort_bowtie2_bam,
-        FASTQ_TRIM_FASTP_FASTQC.out.reads.map { [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta)
+        FASTQC_RAW.out.reads.map { [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta)
 	)
+
+    FASTQC_TRIMMED (
+        FASTQ_TRIM_FASTP_FASTQC.out.reads.map { [it[0], it[1]]}
+    )
 
     SPADES (
         FASTQ_TRIM_FASTP_FASTQC.out.reads.map { [it[0], it[1]]}
