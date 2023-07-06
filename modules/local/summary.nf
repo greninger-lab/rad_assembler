@@ -7,7 +7,7 @@ process SUMMARY {
         'staphb/samtools:1.17' }"
 
     input:
-    tuple val(meta), path(fastp_trim_log), path(align_new_ref_bam), path(align_new_ref_bai), path(consensus)
+    tuple val(meta), path(rlog), path(qlog), path(align_new_ref_bam), path(align_new_ref_bai), path(consensus)
 
     output:
     path("*.tsv"), emit: summary_tsv
@@ -21,9 +21,10 @@ process SUMMARY {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    # raw reads and trimmed reads
-    raw_reads=`grep -A1 "before filtering:" ${fastp_trim_log} | grep 'total reads:' | cut -d: -f2 | tr -d " " | awk 'NF{sum+=\$1} END {print sum}'`
-    trimmed_reads=`grep -A1 "after filtering:" ${fastp_trim_log} | grep 'total reads:' | cut -d: -f2 | tr -d " " | awk 'NF{sum+=\$1} END {print sum}'`
+    # raw reads and trimmed reads  
+    raw_reads=`grep "Input:" ${rlog} | awk '{print $2}'`
+    trimmed_reads=`grep "Result:" ${qlog} | awk '{print $2}'` 
+    
     pct_reads_trimmed=\$(python3 -c "print (float('\$trimmed_reads') / float('\$raw_reads') * 100)")
 
     # mapped reads

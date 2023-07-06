@@ -224,12 +224,13 @@ workflow RAD {
         PROKKA_GENBANK_TO_FASTA_DB.out.faa,
         []
     )
-
-    BBDUK_Q.out.log
+    
+    BBDUK_R.out.log
+        .join(BBDUK_Q.out.log)
         .join(FASTQ_ALIGN_BOWTIE2_NEW_REF.out.bam)
         .join(FASTQ_ALIGN_BOWTIE2_NEW_REF.out.bai)
         .join(GENERATE_CONSENSUS.out.consensus)
-        .map { meta, trim_log, bam, bai, consensus -> [ meta, trim_log, bam, bai, consensus] }
+        .map { meta, rlog, qlog, bam, bai, consensus -> [ meta, rlog, qlog, bam, bai, consensus] }
         .set {ch_summary}
     
     SUMMARY (
