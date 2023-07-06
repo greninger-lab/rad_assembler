@@ -22,8 +22,8 @@ process SUMMARY {
 
     """
     # raw reads and trimmed reads  
-    raw_reads=`grep "Input:" ${rlog} | awk '{print $2}'`
-    trimmed_reads=`grep "Result:" ${qlog} | awk '{print $2}'` 
+    raw_reads=`grep "Input:" ${rlog} | awk '{print \$2}'`
+    trimmed_reads=`grep "Result:" ${qlog} | awk '{print \$2}'` 
     
     pct_reads_trimmed=\$(python3 -c "print (float('\$trimmed_reads') / float('\$raw_reads') * 100)")
 
