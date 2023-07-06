@@ -76,6 +76,7 @@ include { BBMAP_BBDUK as BBDUK_R } from '../modules/nf-core/bbmap/bbduk/main'
 include { BBMAP_BBDUK as BBDUK_L } from '../modules/nf-core/bbmap/bbduk/main'
 include { FASTQC as FASTQC_RAW } from '../modules/nf-core/fastqc/main'
 include { FASTQC as FASTQC_TRIMMED } from '../modules/nf-core/fastqc/main'
+include { SEQTK_SAMPLE } from '../modules/nf-core/seqtk/sample/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -90,9 +91,6 @@ workflow RAD {
 
     ch_versions = Channel.empty()
 
-    //
-    // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-    //
     INPUT_CHECK (
         ch_input
     )
@@ -112,8 +110,18 @@ workflow RAD {
 
     ch_bowtie2_index = BOWTIE2_BUILD_REFERENCE.out.index.map{ [it[1]] }
 
+    
+    ch_raw_reads = INPUT_CHECK.out.reads
+
+    if (params.sub_sample) {
+        SEQTK_SAMPLE (
+            ch_raw_reads.map { it[0], it[1], params.sample_size }
+        )
+        ch_raw_reads = SEQTK_SAMPLE.out.reads
+    }
+
     FASTQC_RAW (
-        INPUT_CHECK.out.reads
+        ch_raw_reads
     )
     /*
     FASTQ_TRIM_FASTP_FASTQC (
@@ -127,7 +135,7 @@ workflow RAD {
     */
 
     BBDUK_R (
-        INPUT_CHECK.out.reads,
+        ch_raw_reads,
         []
     )
     
