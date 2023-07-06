@@ -74,6 +74,7 @@ include { PROKKA } from '../modules/nf-core/prokka/main'
 include { BWA_INDEX } from '../modules/nf-core/bwa/index/main'
 include { BBMAP_BBDUK as BBDUK_R } from '../modules/nf-core/bbmap/bbduk/main'
 include { BBMAP_BBDUK as BBDUK_L } from '../modules/nf-core/bbmap/bbduk/main'
+include { BBMAP_BBDUK as BBDUK_Q } from '../modules/nf-core/bbmap/bbduk/main'
 include { FASTQC as FASTQC_RAW } from '../modules/nf-core/fastqc/main'
 include { FASTQC as FASTQC_TRIMMED } from '../modules/nf-core/fastqc/main'
 include { SEQTK_SAMPLE } from '../modules/nf-core/seqtk/sample/main'
@@ -144,20 +145,25 @@ workflow RAD {
         []
     )
 
-	FASTQ_ALIGN_BOWTIE2 ( 
+    BBDUK_Q (
         BBDUK_L.out.reads,
-        BBDUK_L.out.reads.map { [it[0]] }.combine(ch_bowtie2_index),
+        []
+    )
+
+	FASTQ_ALIGN_BOWTIE2 ( 
+        BBDUK_Q.out.reads,
+        BBDUK_Q.out.reads.map { [it[0]] }.combine(ch_bowtie2_index),
 		params.save_bowtie2_unaligned,
 		params.sort_bowtie2_bam,
-        BBDUK_L.out.reads.map { [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta)
+        BBDUK_Q.out.reads.map { [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta)
 	)
 
     FASTQC_TRIMMED (
-        BBDUK_L.out.reads
+        BBDUK_Q.out.reads
     )
 
     SPADES (
-        BBDUK_L.out.reads
+        BBDUK_Q.out.reads
     )
 
     GUNZIP (
@@ -199,11 +205,11 @@ workflow RAD {
     )
 
 	FASTQ_ALIGN_BOWTIE2_NEW_REF ( 
-        BBDUK_L.out.reads,
-        BBDUK_L.out.reads.map { [it[0]] }.join(BOWTIE2_BUILD_NEW_REFERENCE.out.index),
+        BBDUK_Q.out.reads,
+        BBBDUK_QBDUK_L.out.reads.map { [it[0]] }.join(BOWTIE2_BUILD_NEW_REFERENCE.out.index),
 		params.save_bowtie2_unaligned,
 		params.sort_bowtie2_bam,
-        BBDUK_L.out.reads.map { [it[0]] }.join(MAKE_REFERENCE.out.new_ref)
+        BBDUK_Q.out.reads.map { [it[0]] }.join(MAKE_REFERENCE.out.new_ref)
 	)
 
     GENERATE_CONSENSUS (
@@ -219,7 +225,7 @@ workflow RAD {
         []
     )
 
-    BBDUK_L.out.log
+    BBDUK_Q.out.log
         .join(FASTQ_ALIGN_BOWTIE2_NEW_REF.out.bam)
         .join(FASTQ_ALIGN_BOWTIE2_NEW_REF.out.bai)
         .join(GENERATE_CONSENSUS.out.consensus)
