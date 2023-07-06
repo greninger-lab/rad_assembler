@@ -115,7 +115,7 @@ workflow RAD {
 
     if (params.sub_sample) {
         SEQTK_SAMPLE (
-            ch_raw_reads.combine(params.sample_size)
+            ch_raw_reads.combine([params.sample_size])
         )
         ch_raw_reads = SEQTK_SAMPLE.out.reads
     }
