@@ -180,6 +180,21 @@
                 }
             }
         },
+        "seqtk_options": {
+            "title": "Seqtk options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "sub_sample": {
+                    "type": "boolean"
+                },
+                "sample_size": {
+                    "type": "integer",
+                    "default": 100000
+                }
+            }
+        },
         "fastqc_fastp_options": {
             "title": "FastQC/fastp options",
             "type": "object",
