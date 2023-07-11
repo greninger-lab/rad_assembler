@@ -35,13 +35,15 @@ process SUMMARY {
     mean_genome_coverage=`samtools coverage ${align_new_ref_bam} | awk 'NR>1' | cut -f7`
 
     # consensus genome
-    consensus_length=`awk '/^>/{if (l!="") print l; print; l=0; next}{l+=length(\$0)}END{print l}' ${consensus} | awk 'FNR==2{print val,\$1}'`
-    num_ns_consensus=`grep -v "^>" ${consensus} | tr -c -d N | wc -c`
-    num_as_consensus=`grep -v "^>" ${consensus} | tr -c -d A | wc -c`
-    num_cs_consensus=`grep -v "^>" ${consensus} | tr -c -d C | wc -c`
-    num_gs_consensus=`grep -v "^>" ${consensus} | tr -c -d G | wc -c`
-    num_ts_consensus=`grep -v "^>" ${consensus} | tr -c -d T | wc -c`
-    num_non_ns_ambiguous=\$(python3 -c "print(int(\$consensus_length)-int(\$num_as_consensus)-int(\$num_cs_consensus)-int(\$num_gs_consensus)-int(\$num_ts_consensus)-int(\$num_ns_consensus))")
+    if [ -f "${consensus}" ]; then
+        consensus_length=`awk '/^>/{if (l!="") print l; print; l=0; next}{l+=length(\$0)}END{print l}' ${consensus} | awk 'FNR==2{print val,\$1}'`
+        num_ns_consensus=`grep -v "^>" ${consensus} | tr -c -d N | wc -c`
+        num_as_consensus=`grep -v "^>" ${consensus} | tr -c -d A | wc -c`
+        num_cs_consensus=`grep -v "^>" ${consensus} | tr -c -d C | wc -c`
+        num_gs_consensus=`grep -v "^>" ${consensus} | tr -c -d G | wc -c`
+        num_ts_consensus=`grep -v "^>" ${consensus} | tr -c -d T | wc -c`
+        num_non_ns_ambiguous=\$(python3 -c "print(int(\$consensus_length)-int(\$num_as_consensus)-int(\$num_cs_consensus)-int(\$num_gs_consensus)-int(\$num_ts_consensus)-int(\$num_ns_consensus))")
+    fi
 
     echo "sample_name\traw_reads\ttrimmed_reads\tpct_reads_trimmed\tmapped_reads\tpct_reads_mapped\tpct_genome_covered\tmean_genome_coverage\tconsensus_length\tnum_ns\tnum_ambiguous" > ${prefix}.summary.tsv
     echo "${prefix}\t\${raw_reads}\t\${trimmed_reads}\t\${pct_reads_trimmed}\t\${mapped_reads}\t\${pct_reads_mapped}\t\${pct_genome_covered}\t\${mean_genome_coverage}\t\${consensus_length}\t\${num_ns_consensus}\t\${num_non_ns_ambiguous}" >> ${prefix}.summary.tsv
