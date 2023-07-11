@@ -43,7 +43,7 @@ process SUMMARY {
     num_ts_consensus=0
     num_non_ns_ambiguous=0
     
-    filesize=$(wc -c < ${consensus})
+    filesize=\$(wc -c < ${consensus})
     if ((filesize > 500)); then
         consensus_length=`awk '/^>/{if (l!="") print l; print; l=0; next}{l+=length(\$0)}END{print l}' ${consensus} | awk 'FNR==2{print val,\$1}'`
         num_ns_consensus=`grep -v "^>" ${consensus} | tr -c -d N | wc -c`
