@@ -35,7 +35,7 @@ process SUMMARY {
     mean_genome_coverage=`samtools coverage ${align_new_ref_bam} | awk 'NR>1' | cut -f7`
 
     # consensus genome
-    if [ -f "${consensus}" ]; then
+    if [ -s ${consensus} ]; then
         consensus_length=`awk '/^>/{if (l!="") print l; print; l=0; next}{l+=length(\$0)}END{print l}' ${consensus} | awk 'FNR==2{print val,\$1}'`
         num_ns_consensus=`grep -v "^>" ${consensus} | tr -c -d N | wc -c`
         num_as_consensus=`grep -v "^>" ${consensus} | tr -c -d A | wc -c`
