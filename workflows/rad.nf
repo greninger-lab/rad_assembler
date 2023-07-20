@@ -204,7 +204,12 @@ workflow RAD {
         MAKE_REFERENCE.out.new_ref
     )
 
-	FASTQ_ALIGN_BOWTIE2_NEW_REF ( 
+
+    BBDUK_Q.out.reads.map { [it[0]] }.join(BOWTIE2_BUILD_NEW_REFERENCE.out.index).view()
+    
+    BBDUK_Q.out.reads.join(BOWTIE2_BUILD_NEW_REFERENCE.out.index).view()
+	
+    FASTQ_ALIGN_BOWTIE2_NEW_REF ( 
         BBDUK_Q.out.reads,
         BBDUK_Q.out.reads.map { [it[0]] }.join(BOWTIE2_BUILD_NEW_REFERENCE.out.index),
 		params.save_bowtie2_unaligned,
