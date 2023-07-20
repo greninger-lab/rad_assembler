@@ -206,9 +206,9 @@ workflow RAD {
 
 
     BBDUK_Q.out.reads.map { [it[0]] }.join(BOWTIE2_BUILD_NEW_REFERENCE.out.index).view()
-    
+    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
     BBDUK_Q.out.reads.join(BOWTIE2_BUILD_NEW_REFERENCE.out.index).view()
-	
+	print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
     FASTQ_ALIGN_BOWTIE2_NEW_REF ( 
         BBDUK_Q.out.reads,
         BBDUK_Q.out.reads.map { [it[0]] }.join(BOWTIE2_BUILD_NEW_REFERENCE.out.index),
