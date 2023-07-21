@@ -124,16 +124,6 @@ workflow RAD {
     FASTQC_RAW (
         ch_raw_reads
     )
-    /*
-    FASTQ_TRIM_FASTP_FASTQC (
-        INPUT_CHECK.out.reads,
-        params.adapter_fasta,
-        params.save_trimmed_fail,
-        params.save_merged,
-        params.skip_fastp,
-        params.skip_fastqc
-    )
-    */
 
     BBDUK_R (
         ch_raw_reads,
@@ -206,18 +196,14 @@ workflow RAD {
 
     BBDUK_Q.out.reads
         .join(BOWTIE2_BUILD_NEW_REFERENCE.out.index)
-        .map{ [it[0], it[2]] }.set{ch_new_index}
-    
-    BBDUK_Q.out.reads
-        .join(MAKE_REFERENCE.out.new_ref)
-        .map{ [it[0], it[2]] }.set{ch_new_ref}  
+        .join(MAKE_REFERENCE.out.new_ref).set{ch_matched_reference}
 
     FASTQ_ALIGN_BOWTIE2_NEW_REF ( 
-        BBDUK_Q.out.reads,
-        ch_new_index,
+        ch_matched_reference.map{ [it[0], it[1]] },
+        ch_matched_reference.map{ [it[0], it[2]] },
 		params.save_bowtie2_unaligned,
 		params.sort_bowtie2_bam,
-        ch_new_ref
+        ch_matched_reference.map{ [it[0], it[3]] }
 	)
 
     GENERATE_CONSENSUS (
