@@ -20,7 +20,7 @@ process BWA_MEM_ALIGN {
 
     /usr/local/bin/bwa index ${reference_fasta}
     /usr/local/bin/bwa mem -t ${task.cpus} ${reference_fasta} $raw | samtools view -@ ${task.cpus} -b -F 4 - > ${prefix}_new_ref.bam
-    reads_mapped=\$(samtools view -c ${base}_new_ref.bam)
+    reads_mapped=\$(samtools view -c ${prefix}_new_ref.bam)
 
     #cp ${prefix}_summary.csv ${prefix}_summary2.csv
     touch ${prefix}_new_ref_reads_mapped.txt
