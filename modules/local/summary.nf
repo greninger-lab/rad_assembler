@@ -7,7 +7,7 @@ process SUMMARY {
         'staphb/samtools:1.17' }"
 
     input:
-    tuple val(meta), path(rlog), path(qlog), path(align_new_ref_bam), path(align_new_ref_bai), path(consensus)
+    tuple val(meta), path(rlog), path(qlog), path(align_new_ref_bam), path(consensus)
 
     output:
     path("*.tsv"), emit: summary_tsv

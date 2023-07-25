@@ -236,10 +236,9 @@ workflow RAD {
     
     BBDUK_R.out.log
         .join(BBDUK_Q.out.log)
-        .join(FASTQ_ALIGN_BOWTIE2_NEW_REF.out.bam)
-        .join(FASTQ_ALIGN_BOWTIE2_NEW_REF.out.bai)
+        .join(BWA_MEM_ALIGN_NEW_REF.out.new_ref_bam)
         .join(IVAR_CONSENSUS.out.consensus)
-        .map { meta, rlog, qlog, bam, bai, consensus -> [ meta, rlog, qlog, bam, bai, consensus] }
+        .map { meta, rlog, qlog, bam, consensus -> [ meta, rlog, qlog, bam, consensus] }
         .set {ch_summary}
     
     SUMMARY (
