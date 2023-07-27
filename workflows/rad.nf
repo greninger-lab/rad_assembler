@@ -40,6 +40,7 @@ include { GENERATE_CONSENSUS } from '../modules/local/generate_consensus'
 include { GENBANK_TO_FASTA } from '../modules/local/genbank_to_fasta'
 include { BWA_MEM_ALIGN as BWA_MEM_ALIGN_NEW_REF } from '../modules/local/bwa_mem_align'
 include { IVAR_CONSENSUS } from '../modules/local/ivar_consensus'
+include { BWA_MEM_ALIGN as BWA_MEM_ALIGN_FINAL_CONSENSUS } from '../modules/local/bwa_mem_align'
 include { PROKKA_GENBANK_TO_FASTA_DB } from '../modules/local/prokka_genbank_to_fasta_db'
 include { SUMMARY } from '../modules/local/summary'
 include { CLEANUP } from '../modules/local/cleanup'
@@ -193,12 +194,13 @@ workflow RAD {
         params.make_reference
     )
 
+    /*
     BOWTIE2_BUILD_NEW_REFERENCE (
         MAKE_REFERENCE.out.new_ref
     )
+    */
 
     BBDUK_Q.out.reads
-        //.join(BOWTIE2_BUILD_NEW_REFERENCE.out.index)
         .join(MAKE_REFERENCE.out.new_ref).set{ch_matched_reference}
 
     BWA_MEM_ALIGN_NEW_REF (
@@ -210,7 +212,15 @@ workflow RAD {
         BWA_MEM_ALIGN_NEW_REF.out.new_ref_bam
     )
 
-/*
+    BBDUK_Q.out.reads
+        .join(IVAR_CONSENSUS.out.consensus).set{ch_reads_mapped_final_consensus}
+
+    BWA_MEM_ALIGN_FINAL_CONSENSUS (
+        ch_reads_mapped_final_consensus.map{ [it[0], it[1]] },
+        ch_reads_mapped_final_consensus.map{ [it[0], it[2]] }
+    )
+    
+    /*
     FASTQ_ALIGN_BOWTIE2_NEW_REF ( 
         ch_matched_reference.map{ [it[0], it[1]] },
         ch_matched_reference.map{ [it[0], it[2]] },
