@@ -20,7 +20,8 @@ process MUGSY {
     script:
     """
     # mugsy
-    mugsy --directory ./ --prefix ${meta.id}_aligned_scaffolds_ref ${scaffolds} ${fasta}
+    cp ${fasta} -${fasta}
+    mugsy --directory ./ --prefix ${meta.id}_aligned_scaffolds_ref -${fasta} ${scaffolds}
     sed '/^a score=0/,\$d' ${meta.id}_aligned_scaffolds_ref.maf > ${meta.id}_aligned_scaffolds_nonzero_ref.maf
 
     
