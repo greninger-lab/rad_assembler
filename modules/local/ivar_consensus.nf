@@ -22,7 +22,7 @@ process IVAR_CONSENSUS {
     samtools depth -a -H ${bam} -o ${prefix}_final.bed
 
     # call consensus genome 
-    samtools mpileup -d 5000 -A -Q 0 ${bam} | ivar consensus -p ${prefix} -n 'N' -m 50 -t 0.2 -i ${prefix}
+    samtools mpileup -d 5000 -A -Q 0 ${bam} | ivar consensus -p ${prefix} -n 'N' -m 8 -t 0.2 -i ${prefix}
     cp ${prefix}.fa ${prefix}_ivar_final_consensus.fasta
 
     """
