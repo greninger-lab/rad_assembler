@@ -4,7 +4,7 @@ process MUGSY {
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/':
-        'staphb/mugsy' }"
+        'docker.io/jefffurlong/mugsy:v1r2.2' }"
 
     input:
     tuple val(meta), path(scaffolds)
@@ -20,8 +20,7 @@ process MUGSY {
     script:
     """
     # mugsy
-    cp ${fasta} zzz_${fasta}
-    mugsy --directory ./ --prefix ${meta.id}_aligned_scaffolds_ref zzz_${fasta} ${scaffolds}
+    mugsy --directory ./ --prefix ${meta.id}_aligned_scaffolds_ref ${fasta} ${scaffolds}
     sed '/^a score=0/,\$d' ${meta.id}_aligned_scaffolds_ref.maf > ${meta.id}_aligned_scaffolds_nonzero_ref.maf
 
     
