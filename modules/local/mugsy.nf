@@ -18,10 +18,11 @@ process MUGSY {
     task.ext.when == null || task.ext.when
 
     script:
+    def prefix = meta.id.replaceAll('-','_')
     """
     # mugsy
-    mugsy --directory ./ --prefix ${meta.id}_aligned_scaffolds_ref ${fasta} ${scaffolds}
-    sed '/^a score=0/,\$d' ${meta.id}_aligned_scaffolds_ref.maf > ${meta.id}_aligned_scaffolds_nonzero_ref.maf
+    mugsy --directory ./ --prefix ${prefix}_aligned_scaffolds_ref ${fasta} ${scaffolds}
+    sed '/^a score=0/,\$d' ${prefix}_aligned_scaffolds_ref.maf > ${meta.id}_aligned_scaffolds_nonzero_ref.maf
 
     
     cat <<-END_VERSIONS > versions.yml
