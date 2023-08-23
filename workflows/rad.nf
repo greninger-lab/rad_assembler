@@ -38,13 +38,9 @@ include { MUGSY } from '../modules/local/mugsy'
 include { MAKE_REFERENCE } from '../modules/local/make_reference'
 include { GENERATE_CONSENSUS } from '../modules/local/generate_consensus'
 include { GENBANK_TO_FASTA } from '../modules/local/genbank_to_fasta'
-include { BWA_MEM_ALIGN as BWA_MEM_ALIGN_NEW_REF } from '../modules/local/bwa_mem_align'
-include { IVAR_CONSENSUS } from '../modules/local/ivar_consensus'
-include { BWA_MEM_ALIGN as BWA_MEM_ALIGN_FINAL_CONSENSUS } from '../modules/local/bwa_mem_align'
 include { PROKKA_GENBANK_TO_FASTA_DB } from '../modules/local/prokka_genbank_to_fasta_db'
 include { SUMMARY } from '../modules/local/summary'
 include { CLEANUP } from '../modules/local/cleanup'
-
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -194,33 +190,14 @@ workflow RAD {
         params.make_reference
     )
 
-    /*
     BOWTIE2_BUILD_NEW_REFERENCE (
         MAKE_REFERENCE.out.new_ref
     )
-    */
 
     BBDUK_Q.out.reads
+        .join(BOWTIE2_BUILD_NEW_REFERENCE.out.index)
         .join(MAKE_REFERENCE.out.new_ref).set{ch_matched_reference}
 
-    BWA_MEM_ALIGN_NEW_REF (
-        ch_matched_reference.map{ [it[0], it[1]] },
-        ch_matched_reference.map{ [it[0], it[2]] }
-    )
-
-    IVAR_CONSENSUS (
-        BWA_MEM_ALIGN_NEW_REF.out.new_ref_bam
-    )
-
-    BBDUK_Q.out.reads
-        .join(IVAR_CONSENSUS.out.consensus).set{ch_reads_mapped_final_consensus}
-
-    BWA_MEM_ALIGN_FINAL_CONSENSUS (
-        ch_reads_mapped_final_consensus.map{ [it[0], it[1]] },
-        ch_reads_mapped_final_consensus.map{ [it[0], it[2]] }
-    )
-    
-    /*
     FASTQ_ALIGN_BOWTIE2_NEW_REF ( 
         ch_matched_reference.map{ [it[0], it[1]] },
         ch_matched_reference.map{ [it[0], it[2]] },
@@ -235,20 +212,19 @@ workflow RAD {
         FASTQ_ALIGN_BOWTIE2_NEW_REF.out.bam.map { [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta),
         params.generate_consensus
     )
-*/
-
 
     PROKKA (
-        IVAR_CONSENSUS.out.consensus,
+        GENERATE_CONSENSUS.out.consensus,
         PROKKA_GENBANK_TO_FASTA_DB.out.faa,
         []
     )
     
     BBDUK_R.out.log
         .join(BBDUK_Q.out.log)
-        .join(BWA_MEM_ALIGN_NEW_REF.out.new_ref_bam)
-        .join(IVAR_CONSENSUS.out.consensus)
-        .map { meta, rlog, qlog, bam, consensus -> [ meta, rlog, qlog, bam, consensus] }
+        .join(FASTQ_ALIGN_BOWTIE2_NEW_REF.out.bam)
+        .join(FASTQ_ALIGN_BOWTIE2_NEW_REF.out.bai)
+        .join(GENERATE_CONSENSUS.out.consensus)
+        .map { meta, rlog, qlog, bam, bai, consensus -> [ meta, rlog, qlog, bam, bai, consensus] }
         .set {ch_summary}
     
     SUMMARY (
