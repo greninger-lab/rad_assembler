@@ -52,17 +52,15 @@ Install [`Docker`](https://docs.docker.com/engine/installation/)
 
 
 #### Sample csv example:
-assets/example.csv
+    rad_assembler/assets/example.csv
 
 #### Sample csv format:
 ---------
-sample,fastq_1,fastq_2
-F79217_S26,sample_L001_R1_001.fastq.gz,sample_L001_R2_001.fastq.gz
+    sample,fastq_1,fastq_2
+    F79217_S26,sample_L001_R1_001.fastq.gz,sample_L001_R2_001.fastq.gz
 ---------
 
 You can create a sample csv file from an s3 folder (including single depth subdirectories) using the shell script generate_aws_sample_csv.sh in bin folder, like this:
 
     generate_aws_sample_csv.sh s3://bucket-name /folder/path/to/run/folder/ csv_name _L001_R1_001 _L001_R2_001
-
 note:  replace _L001_R1_001 _L001_R2_001 with the suffixes of read1 and read2 if necessary
-
