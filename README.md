@@ -6,20 +6,8 @@ Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#install
 
 Install [`Docker`](https://docs.docker.com/engine/installation/)
 
-#### Sample csv example:<br>
-assets/example.csv
 
-#### Format:
-sample,fastq_1,fastq_2
-F79217_S26,sample_L001_R1_001.fastq.gz,sample_L001_R2_001.fastq.gz
-
-
-##### You can create a sample csv file from an s3 folder (including single depth subdirectories) using the shell script generate_aws_sample_csv.sh in bin folder, like this:
-generate_aws_sample_csv.sh s3://bucket-name /folder/path/to/run/folder/ csv_name _L001_R1_001 _L001_R2_001
-
-note:  replace _L001_R1_001 _L001_R2_001 with the suffixes of read1 and read2 if necessary
-
-### Command line:<br>
+### Command line:
     nextflow run greninger-lab/rad_assembler \
         --input PATH_TO_SAMPLE_CSV \                      # required
         --outdir PATH_TO_OUTPUT_FOLDER \                  # required
@@ -32,7 +20,7 @@ note:  replace _L001_R1_001 _L001_R2_001 with the suffixes of read1 and read2 if
         -r main                                           # required (use the github main branch)
 
 
-#### Region map files:<br>
+#### Region map files:
     An optional region map in json format for splitting the reference into sections so that a new reference for read mapping can be built more accurately.  This can be very helpful when there are large inverted repeat regions in the genome. 
     
     Example region map file
@@ -61,4 +49,20 @@ note:  replace _L001_R1_001 _L001_R2_001 with the suffixes of read1 and read2 if
     Example region map files:
     rad_assembler/region_maps/HSV1-NC001806.json
     rad_assembler/region_maps/HSV1-NC001&98.json
+
+
+#### Sample csv example:
+assets/example.csv
+
+#### Sample csv format:
+---------
+sample,fastq_1,fastq_2
+F79217_S26,sample_L001_R1_001.fastq.gz,sample_L001_R2_001.fastq.gz
+---------
+
+You can create a sample csv file from an s3 folder (including single depth subdirectories) using the shell script generate_aws_sample_csv.sh in bin folder, like this:
+
+    generate_aws_sample_csv.sh s3://bucket-name /folder/path/to/run/folder/ csv_name _L001_R1_001 _L001_R2_001
+
+note:  replace _L001_R1_001 _L001_R2_001 with the suffixes of read1 and read2 if necessary
 
