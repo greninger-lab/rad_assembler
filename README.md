@@ -44,7 +44,7 @@ Example region map file
 -----------------------
 
 "regions" defines a region name and the reference coordinates for extracting the region.  De novo assembled scaffolds are mapped to the region and then a new reference is generated for the region. 
-"region_order" sets the order for concatenating the regions together to make a complete genome reference.  "reverse" will reverse compliment the the region reference before concatenating.
+"region_order" sets the order for concatenating the new region references together to make a complete genome reference.  "reverse" will reverse compliment the the region reference before concatenating if set to true.
 
 Example region map files:
 rad_assembler/region_maps/HSV1-NC001806.json
