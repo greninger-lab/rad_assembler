@@ -8,6 +8,7 @@ process MUGSY {
 
     input:
     tuple val(meta), path(scaffolds)
+    path(fasta_ref)
     path(genbank_ref)
     path(regions)
     path(maf_convert)
@@ -34,13 +35,13 @@ process MUGSY {
     if [ ${single_ref} -eq 1 ]
     then
         # Use the entire reference
-        ref_fasta="${genbank_ref}"
+        ref_fasta="${fasta_ref}"
         ref_name=\${ref_fasta%.fasta*}
-        mugsy --directory ./ --prefix ${prefix}_aligned_scaffolds_\${ref_name/./_} ${genbank_ref} ${scaffolds}
+        mugsy --directory ./ --prefix ${prefix}_aligned_scaffolds_\${ref_name/./_} ${fasta_ref} ${scaffolds}
         sed '/^a score=0/,\$d' ${prefix}_aligned_scaffolds_\${ref_name/./_}.maf > ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.maf
         /usr/bin/python2.7 ${maf_convert} -d sam ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.maf > ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.sam
-        samtools view -bS -T ${genbank_ref} ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.sam | samtools sort > ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.bam
-        Rscript --vanilla make_reference.R ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.bam ${genbank_ref}
+        samtools view -bS -T ${fasta_ref} ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.sam | samtools sort > ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.bam
+        Rscript --vanilla make_reference.R ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.bam ${fasta_ref}
         mv ${meta.id}_aligned_scaffolds_nonzero_NC_001806.2_consensus.fasta ${meta.id}_new_ref_consensus.fasta
     else
         # Loop through all regions of the reference and concatenate resulting new region references as defined in region_map

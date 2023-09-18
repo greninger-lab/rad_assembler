@@ -184,6 +184,7 @@ workflow RAD {
     MUGSY (
         GUNZIP.out.gunzip.map {[it[0], it[1]]},
         GENBANK_TO_FASTA.out.fasta,
+        ch_genbank_ref,
         ch_regions,
         params.maf_convert,
         params.make_reference,
