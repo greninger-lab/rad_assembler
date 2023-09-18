@@ -2,7 +2,6 @@ process LAST_MAFCONVERT {
     tag "$meta.id"
     label 'process_high'
 
-    conda "bioconda::last=1418"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/last:1418--h5b5514e_0' :
         'biocontainers/last:1418--h5b5514e_0' }"

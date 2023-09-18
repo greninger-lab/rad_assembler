@@ -17,6 +17,8 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
 if (params.genbank_ref) { ch_genbank_ref = file(params.genbank_ref) } else { exit 1, 'Genbank reference file not specified!' }
+if (params.bowtie2_host_index) { ch_bowtie2_host_index = Channel.fromPath(params.bowtie2_host_index)} else { exit 1, 'Bowtie2 host path not specified!' }
+if (params.region_map) { ch_region_map = file(params.region_map) } else { ch_region_map = [] }
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -74,6 +76,10 @@ include { LAST_MAFCONVERT } from '../modules/nf-core/last/mafconvert/main'
 include { GUNZIP as GUNZIP_MAF_TO_SAM } from '../modules/nf-core/gunzip/main'
 include { BOWTIE2_BUILD as BOWTIE2_BUILD_NEW_REFERENCE } from '../modules/nf-core/bowtie2/build/main'
 include { BOWTIE2_BUILD as BOWTIE2_BUILD_REFERENCE } from '../modules/nf-core/bowtie2/build/main'
+include { BOWTIE2_BUILD as BOWTIE2_BUILD_FINAL_REFERENCE } from '../modules/nf-core/bowtie2/build/main'
+include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_HOST_REFERENCE } from '../modules/nf-core/bowtie2/align/main'
+include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_NEW_REFERENCE } from '../modules/nf-core/bowtie2/align/main'
+include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_FINAL_REFERENCE } from '../modules/nf-core/bowtie2/align/main'
 include { PROKKA } from '../modules/nf-core/prokka/main'
 include { BWA_INDEX } from '../modules/nf-core/bwa/index/main'
 include { BBMAP_BBDUK as BBDUK_R } from '../modules/nf-core/bbmap/bbduk/main'
@@ -102,7 +108,9 @@ workflow RAD {
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
     GENBANK_TO_FASTA (
-        ch_genbank_ref
+        ch_genbank_ref,
+        ch_region_map,
+        params.configure_reference
     )
     
     PROKKA_GENBANK_TO_FASTA_DB (
@@ -144,109 +152,81 @@ workflow RAD {
         []
     )
 
-	FASTQ_ALIGN_BOWTIE2 ( 
+    BOWTIE2_ALIGN_HOST_REFERENCE (
         BBDUK_Q.out.reads,
-        BBDUK_Q.out.reads.map { [it[0]] }.combine(ch_bowtie2_index),
+        BBDUK_Q.out.reads.map { [it[0]] }.combine(ch_bowtie2_host_index),
+        true,  // save_unaligned, i.e. non-host reads
+        false  // don't sort host aligned reads      
+    )
+
+	FASTQ_ALIGN_BOWTIE2 ( 
+        BOWTIE2_ALIGN_HOST_REFERENCE.out.fastq,
+        BOWTIE2_ALIGN_HOST_REFERENCE.out.fastq.map { [it[0]] }.combine(ch_bowtie2_index),
 		params.save_bowtie2_unaligned,
 		params.sort_bowtie2_bam,
-        BBDUK_Q.out.reads.map { [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta)
+        BOWTIE2_ALIGN_HOST_REFERENCE.out.fastq.map { [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta)
 	)
 
     FASTQC_TRIMMED (
-        BBDUK_Q.out.reads
+       BOWTIE2_ALIGN_HOST_REFERENCE.out.fastq
     )
 
     SPADES (
-        BBDUK_Q.out.reads
+        BOWTIE2_ALIGN_HOST_REFERENCE.out.fastq
     )
 
     GUNZIP (
         SPADES.out.scaffolds
     )
 
+    if (params.region_map) { ch_regions = GENBANK_TO_FASTA.out.regions } else { ch_regions = [] }
+
     MUGSY (
         GUNZIP.out.gunzip.map {[it[0], it[1]]},
-        GENBANK_TO_FASTA.out.fasta
+        GENBANK_TO_FASTA.out.fasta,
+        ch_genbank_ref,
+        ch_regions,
+        params.maf_convert,
+        params.make_reference,
+        ch_region_map,
+        params.configure_reference
     )
 
-    LAST_MAFCONVERT (
-        MUGSY.out.aligned_maf,
-        "sam"
-    )
-
-    GUNZIP_MAF_TO_SAM (
-        LAST_MAFCONVERT.out.sam_gz
-    )
-    
-    SAMTOOLS_VIEW_ALIGNED (
-        GUNZIP_MAF_TO_SAM.out.gunzip.map { [it[0], it[1], []] },
-        GUNZIP_MAF_TO_SAM.out.gunzip.map { [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta),
-        []
-    )
-
-    SAMTOOLS_SORT_ALIGNED (
-        SAMTOOLS_VIEW_ALIGNED.out.bam
-    )
-
-    MAKE_REFERENCE (
-        SAMTOOLS_SORT_ALIGNED.out.bam,
-        SAMTOOLS_SORT_ALIGNED.out.bam.map { [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta),
-        params.make_reference
-    )
-
-    /*
     BOWTIE2_BUILD_NEW_REFERENCE (
-        MAKE_REFERENCE.out.new_ref
+       MUGSY.out.new_ref
     )
-    */
 
-    BBDUK_Q.out.reads
-        .join(MAKE_REFERENCE.out.new_ref).set{ch_matched_reference}
+    BOWTIE2_ALIGN_HOST_REFERENCE.out.fastq
+        .join(BOWTIE2_BUILD_NEW_REFERENCE.out.index).set{ch_matched_reference}
 
-    BWA_MEM_ALIGN_NEW_REF (
+    BOWTIE2_ALIGN_NEW_REFERENCE (
         ch_matched_reference.map{ [it[0], it[1]] },
-        ch_matched_reference.map{ [it[0], it[2]] }
+        ch_matched_reference.map{ [it[0], it[2]] },
+        false,
+        true
     )
 
     IVAR_CONSENSUS (
-        BWA_MEM_ALIGN_NEW_REF.out.new_ref_bam
+        BOWTIE2_ALIGN_NEW_REFERENCE.out.bam
     )
 
-    BBDUK_Q.out.reads
-        .join(IVAR_CONSENSUS.out.consensus).set{ch_reads_mapped_final_consensus}
+    BOWTIE2_BUILD_FINAL_REFERENCE (
+       IVAR_CONSENSUS.out.consensus
+    )
 
-    BWA_MEM_ALIGN_FINAL_CONSENSUS (
+    BOWTIE2_ALIGN_HOST_REFERENCE.out.fastq
+        .join(BOWTIE2_BUILD_FINAL_REFERENCE.out.index).set{ch_reads_mapped_final_consensus}
+
+    BOWTIE2_ALIGN_FINAL_REFERENCE (
         ch_reads_mapped_final_consensus.map{ [it[0], it[1]] },
-        ch_reads_mapped_final_consensus.map{ [it[0], it[2]] }
-    )
-    
-    /*
-    FASTQ_ALIGN_BOWTIE2_NEW_REF ( 
-        ch_matched_reference.map{ [it[0], it[1]] },
-        ch_matched_reference.map{ [it[0], it[2]] },
-		params.save_bowtie2_unaligned,
-		params.sort_bowtie2_bam,
-        ch_matched_reference.map{ [it[0], it[3]] }
-	)
+        ch_reads_mapped_final_consensus.map{ [it[0], it[2]] },
+        false,
+        true
+    )        
 
-    GENERATE_CONSENSUS (
-        FASTQ_ALIGN_BOWTIE2_NEW_REF.out.bam,
-        FASTQ_ALIGN_BOWTIE2_NEW_REF.out.bai,
-        FASTQ_ALIGN_BOWTIE2_NEW_REF.out.bam.map { [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta),
-        params.generate_consensus
-    )
-*/
-
-
-    PROKKA (
-        IVAR_CONSENSUS.out.consensus,
-        PROKKA_GENBANK_TO_FASTA_DB.out.faa,
-        []
-    )
-    
     BBDUK_R.out.log
         .join(BBDUK_Q.out.log)
-        .join(BWA_MEM_ALIGN_NEW_REF.out.new_ref_bam)
+        .join(BOWTIE2_ALIGN_NEW_REFERENCE.out.bam)
         .join(IVAR_CONSENSUS.out.consensus)
         .map { meta, rlog, qlog, bam, consensus -> [ meta, rlog, qlog, bam, consensus] }
         .set {ch_summary}

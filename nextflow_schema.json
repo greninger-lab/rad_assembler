@@ -247,6 +247,12 @@
                 },
                 "generate_consensus": {
                     "type": "string"
+                },
+                "configure_reference": {
+                    "type": "string"
+                },
+                "maf_convert": {
+                    "type": "string"
                 }
             }
         },
@@ -257,6 +263,12 @@
             "default": "",
             "properties": {
                 "genbank_ref": {
+                    "type": "string"
+                },
+                "bowtie2_host_index": {
+                    "type": "string"
+                },
+                "region_map": {
                     "type": "string"
                 }
             }

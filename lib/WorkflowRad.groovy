@@ -14,6 +14,9 @@ class WorkflowRad {
         if (!params.genbank_ref) {
             Nextflow.error "Genbank reference file not specified with e.g. '--genbank_ref NC_006273.2.gb' or via a detectable config file."
         }
+        if (!params.bowtie2_host_index) {
+            Nextflow.error "Bowtie2 host index path not specified with e.g. '--bowtie2_host_index /refs/bowtie2/hg38' or via a detectable config file."
+        }
     }
 
     //
