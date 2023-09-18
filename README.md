@@ -21,10 +21,10 @@ Install [`Docker`](https://docs.docker.com/engine/installation/)
 
 
 #### Region map files:
-    An optional region map in json format for splitting the reference into sections so that a new reference for read mapping can be built more accurately.  This can be very helpful when there are large inverted repeat regions in the genome. 
-    
-    Example region map file
-    -----------------------
+An optional region map in json format for splitting the reference into sections so that a new reference for read mapping can be built more accurately.  This can be very helpful when there are large inverted repeat regions in the genome. 
+
+Example region map file
+-----------------------
     {
         "regions": {
             "TRL" : [0,9212],
@@ -41,7 +41,7 @@ Install [`Docker`](https://docs.docker.com/engine/installation/)
             {"region": "TRS", "reverse": false}
         ]
     }
-    -----------------------
+-----------------------
 
     "regions" defines a region name and the reference coordinates for extracting the region.  De novo assembled scaffolds are mapped to the region and then a new reference is generated for the region. 
     "region_order" sets the order for concatenating the regions together to make a complete genome reference.  "reverse" will reverse compliment the the region reference before concatenating.
