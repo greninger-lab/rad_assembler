@@ -11,7 +11,7 @@ Install [`Docker`](https://docs.docker.com/engine/installation/)
     nextflow run greninger-lab/rad_assembler \
         --input PATH_TO_SAMPLE_CSV \                      # required
         --outdir PATH_TO_OUTPUT_FOLDER \                  # required
-        --bowtie2_host_index PATH_TO_HOST_BOWTIE2_INDEX \ # required (path to bowtie2 index of host to use for filtering host DNA)
+        --bowtie2_host_index PATH_TO_HOST_BOWTIE2_INDEX \ # optional (path to bowtie2 index of host to use for filtering host DNA)
         --region_map PATH_TO_REGION_MAP_FILE \            # optional (path to region map json file)
         --genbank_ref ../NC_XXXXXXXX.gb \                 # required (genbank reference)
         -profile docker \                                 # required
