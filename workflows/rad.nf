@@ -17,7 +17,7 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
 if (params.genbank_ref) { ch_genbank_ref = file(params.genbank_ref) } else { exit 1, 'Genbank reference file not specified!' }
-if (params.bowtie2_host_index) { ch_bowtie2_host_index = Channel.fromPath(params.bowtie2_host_index)} else { exit 1, 'Bowtie2 host path not specified!' }
+if (params.bowtie2_host_index) { ch_bowtie2_host_index = Channel.fromPath(params.bowtie2_host_index)} else { ch_bowtie2_host_index = [] }
 if (params.region_map) { ch_region_map = file(params.region_map) } else { ch_region_map = [] }
 
 /*
@@ -152,27 +152,34 @@ workflow RAD {
         []
     )
 
-    BOWTIE2_ALIGN_HOST_REFERENCE (
-        BBDUK_Q.out.reads,
-        BBDUK_Q.out.reads.map { [it[0]] }.combine(ch_bowtie2_host_index),
-        true,  // save_unaligned, i.e. non-host reads
-        false  // don't sort host aligned reads      
-    )
+    ch_trimmed_reads = BBDUK_Q.out.reads
+
+    if (params.ch_bowtie2_host_index) {
+    
+        BOWTIE2_ALIGN_HOST_REFERENCE (
+            BBDUK_Q.out.reads,
+            BBDUK_Q.out.reads.map { [it[0]] }.combine(ch_bowtie2_host_index),
+            true,  // save_unaligned, i.e. non-host reads
+            false  // don't sort host aligned reads      
+        )
+
+        ch_trimmed_reads = BOWTIE2_ALIGN_HOST_REFERENCE.out.fastq
+    }
 
 	FASTQ_ALIGN_BOWTIE2 ( 
-        BOWTIE2_ALIGN_HOST_REFERENCE.out.fastq,
-        BOWTIE2_ALIGN_HOST_REFERENCE.out.fastq.map { [it[0]] }.combine(ch_bowtie2_index),
+        ch_trimmed_reads,
+        ch_trimmed_reads.map { [it[0]] }.combine(ch_bowtie2_index),
 		params.save_bowtie2_unaligned,
 		params.sort_bowtie2_bam,
-        BOWTIE2_ALIGN_HOST_REFERENCE.out.fastq.map { [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta)
+        ch_trimmed_reads.map { [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta)
 	)
 
     FASTQC_TRIMMED (
-       BOWTIE2_ALIGN_HOST_REFERENCE.out.fastq
+       ch_trimmed_reads
     )
 
     SPADES (
-        BOWTIE2_ALIGN_HOST_REFERENCE.out.fastq
+        ch_trimmed_reads
     )
 
     GUNZIP (
@@ -196,7 +203,7 @@ workflow RAD {
        MUGSY.out.new_ref
     )
 
-    BOWTIE2_ALIGN_HOST_REFERENCE.out.fastq
+    ch_trimmed_reads
         .join(BOWTIE2_BUILD_NEW_REFERENCE.out.index).set{ch_matched_reference}
 
     BOWTIE2_ALIGN_NEW_REFERENCE (
@@ -214,7 +221,7 @@ workflow RAD {
        IVAR_CONSENSUS.out.consensus
     )
 
-    BOWTIE2_ALIGN_HOST_REFERENCE.out.fastq
+    ch_trimmed_reads
         .join(BOWTIE2_BUILD_FINAL_REFERENCE.out.index).set{ch_reads_mapped_final_consensus}
 
     BOWTIE2_ALIGN_FINAL_REFERENCE (
