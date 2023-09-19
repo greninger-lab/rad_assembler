@@ -154,7 +154,7 @@ workflow RAD {
 
     ch_trimmed_reads = BBDUK_Q.out.reads
 
-    if (params.ch_bowtie2_host_index) {
+    if (params.bowtie2_host_index) {
     
         BOWTIE2_ALIGN_HOST_REFERENCE (
             BBDUK_Q.out.reads,
