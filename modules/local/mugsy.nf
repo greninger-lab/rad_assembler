@@ -42,7 +42,7 @@ process MUGSY {
         /usr/bin/python2.7 ${maf_convert} -d sam ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.maf > ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.sam
         samtools view -bS -T ${fasta_ref} ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.sam | samtools sort > ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.bam
         Rscript --vanilla make_reference.R ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.bam ${fasta_ref}
-        mv ${meta.id}_aligned_scaffolds_nonzero_NC_001806.2_consensus.fasta ${meta.id}_new_ref_consensus.fasta
+        mv ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}_consensus.fasta ${meta.id}_new_ref_consensus.fasta
     else
         # Loop through all regions of the reference and concatenate resulting new region references as defined in region_map
         array=( ${regions} )
