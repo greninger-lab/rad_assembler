@@ -48,10 +48,8 @@ make_ref_from_assembly<-function(bamfname,reffname){
 		
 		#First lay contigs on reference space--this removes insertions and produces a seq of the same length as ref
 		qseq_on_ref<-sequenceLayer(mcols(gal)$seq,cigar(gal),from="query",to="reference");
-		qseq_on_ref_aligned<-stackStrings(qseq_on_ref,1,max(mcols(gal)$pos+qwidth(gal)-1,width(ref_seq)),
+		qseq_on_ref_aligned<-stackStrings(qseq_on_ref,1,max(mcols(gal)$pos+width(gal)-1,width(ref_seq)),
 																			shift=mcols(gal)$pos-1,Lpadding.letter='N',Rpadding.letter='N');
-		# Added to avoid NA padding
-		qseq_on_ref_aligned<-DNAStringSet(qseq_on_ref_aligned, start=1, end=width(ref_seq))	
 
 		#Make a consensus matrix and get a consensus sequence from the aligned scaffolds
 		cm<-consensusMatrix(qseq_on_ref_aligned,as.prob=T,shift=0)[c('A','C','G','T','N','-'),];
