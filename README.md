@@ -48,7 +48,7 @@ Example region map file
 
 #### Example region map files:
     rad_assembler/region_maps/HSV1-NC001806.json
-    rad_assembler/region_maps/HSV1-NC001798.json
+    rad_assembler/region_maps/HSV2-NC001798.json
 
 
 #### Sample csv example:
