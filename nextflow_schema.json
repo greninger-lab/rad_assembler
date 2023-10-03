@@ -236,6 +236,17 @@
                 }
             }
         },
+        "gaps": {
+            "title": "Gap Filling",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "use_sealer": {
+                    "type": "boolean"
+                }
+            }
+        },        
         "scripts": {
             "title": "Scripts",
             "type": "object",
