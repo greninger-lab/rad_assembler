@@ -37,7 +37,6 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 include { MUGSY } from '../modules/local/mugsy'
-include { ABYSS } from '../modules/local/abyss'
 include { MAKE_REFERENCE } from '../modules/local/make_reference'
 include { GENERATE_CONSENSUS } from '../modules/local/generate_consensus'
 include { GENBANK_TO_FASTA } from '../modules/local/genbank_to_fasta'
@@ -187,21 +186,10 @@ workflow RAD {
         SPADES.out.scaffolds
     )
 
-    if (params.use_sealer) {
-        GUNZIP.out.gunzip
-            .join(ch_trimmed_reads).set{ch_scaffold_reads}
-        ABYSS (
-            ch_scaffold_reads
-        )
-        ABYSS.out.sealed_scaffolds.set{ch_scaffolds}
-    } else {
-        GUNZIP.out.gunzip.map {[it[0], it[1]]}.set{ch_scaffolds}
-    }
-
     if (params.region_map) { ch_regions = GENBANK_TO_FASTA.out.regions } else { ch_regions = [] }
 
     MUGSY (
-        ch_scaffolds,
+        GUNZIP.out.gunzip.map {[it[0], it[1]]},
         GENBANK_TO_FASTA.out.fasta,
         ch_genbank_ref,
         ch_regions,
