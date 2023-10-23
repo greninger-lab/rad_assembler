@@ -253,7 +253,13 @@
                 },
                 "maf_convert": {
                     "type": "string"
-                }
+                },
+                "convert_genbank_to_gff": {
+                    "type": "string"
+                },
+                "edit_ivar_variants": {
+                    "type": "string"
+                }             
             }
         },
         "references": {
@@ -272,7 +278,24 @@
                     "type": "string"
                 }
             }
-        }             
+        },
+        "variants": {
+            "title": "Variants",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "ivar_variants_q": {
+                    "type": "integer"
+                },
+                "ivar_variants_t": {
+                    "type": "number"
+                },
+                "ivar_variants_m": {
+                    "type": "integer"
+                }
+            }
+        }            
     },
     "allOf": [
         {

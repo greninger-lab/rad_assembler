@@ -42,8 +42,9 @@ include { GENERATE_CONSENSUS } from '../modules/local/generate_consensus'
 include { GENBANK_TO_FASTA } from '../modules/local/genbank_to_fasta'
 include { BWA_MEM_ALIGN as BWA_MEM_ALIGN_NEW_REF } from '../modules/local/bwa_mem_align'
 include { IVAR_CONSENSUS } from '../modules/local/ivar_consensus'
+include { IVAR_VARIANTS } from '../modules/local/ivar_variants'
+include { FORMAT_VARIANTS } from '../modules/local/format_variants'
 include { BWA_MEM_ALIGN as BWA_MEM_ALIGN_FINAL_CONSENSUS } from '../modules/local/bwa_mem_align'
-include { PROKKA_GENBANK_TO_FASTA_DB } from '../modules/local/prokka_genbank_to_fasta_db'
 include { SUMMARY } from '../modules/local/summary'
 include { CLEANUP } from '../modules/local/cleanup'
 
@@ -80,7 +81,6 @@ include { BOWTIE2_BUILD as BOWTIE2_BUILD_FINAL_REFERENCE } from '../modules/nf-c
 include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_HOST_REFERENCE } from '../modules/nf-core/bowtie2/align/main'
 include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_NEW_REFERENCE } from '../modules/nf-core/bowtie2/align/main'
 include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_FINAL_REFERENCE } from '../modules/nf-core/bowtie2/align/main'
-include { PROKKA } from '../modules/nf-core/prokka/main'
 include { BWA_INDEX } from '../modules/nf-core/bwa/index/main'
 include { BBMAP_BBDUK as BBDUK_R } from '../modules/nf-core/bbmap/bbduk/main'
 include { BBMAP_BBDUK as BBDUK_L } from '../modules/nf-core/bbmap/bbduk/main'
@@ -110,11 +110,8 @@ workflow RAD {
     GENBANK_TO_FASTA (
         ch_genbank_ref,
         ch_region_map,
-        params.configure_reference
-    )
-    
-    PROKKA_GENBANK_TO_FASTA_DB (
-        ch_genbank_ref
+        params.configure_reference,
+        params.convert_genbank_to_gff
     )
 
     BOWTIE2_BUILD_REFERENCE (
@@ -219,6 +216,18 @@ workflow RAD {
 
     BOWTIE2_BUILD_FINAL_REFERENCE (
        IVAR_CONSENSUS.out.consensus
+    )
+
+    IVAR_VARIANTS (
+        FASTQ_ALIGN_BOWTIE2.out.bam,
+        GENBANK_TO_FASTA.out.fasta,
+        GENBANK_TO_FASTA.out.genes_gff
+    )
+
+    FORMAT_VARIANTS (
+        IVAR_VARIANTS.out.variants,
+        GENBANK_TO_FASTA.out.genes_gff,
+        params.edit_ivar_variants
     )
 
     ch_trimmed_reads
