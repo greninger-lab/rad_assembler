@@ -33,10 +33,10 @@ def parse_gff(file_path):
                     key, value = attr.split('=')
                     attr_dict[key] = value
 
-            if feature_type == 'polypeptide':
-                product = attr_dict.get('product_name')
-                symbol = attr_dict.get('gene_symbol')
-                cds_dict[(start, end)] = symbol + " (" + product + ")"
+            if feature_type == 'CDS':
+                product = attr_dict.get('product')
+                gene = attr_dict.get('gene')
+                cds_dict[(start, end)] = gene + " (" + product + ")"
 
     return cds_dict
 

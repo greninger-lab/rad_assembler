@@ -10,7 +10,6 @@ process GENBANK_TO_FASTA {
     path(genbank_file)
     path(region_map)
     path(configure_reference)
-    path(convert_genbank_to_gff)
 
     output:
     path("${genbank_file.baseName}.fasta"), emit: fasta
@@ -25,7 +24,7 @@ process GENBANK_TO_FASTA {
     def regionmap = region_map ? "-r ${region_map}" : ""
     """
     python3 configure_reference.py ${regionmap} ${genbank_file}
-    python3 convert_genbank_to_gff3.py -i ${genbank_file} --no_fasta -o ${genbank_file.baseName}.gff
+    biopython.convert ${genbank_file} genbank ${genbank_file.baseName}.gff gff3
  
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

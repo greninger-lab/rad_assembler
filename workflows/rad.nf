@@ -110,8 +110,7 @@ workflow RAD {
     GENBANK_TO_FASTA (
         ch_genbank_ref,
         ch_region_map,
-        params.configure_reference,
-        params.convert_genbank_to_gff
+        params.configure_reference
     )
 
     BOWTIE2_BUILD_REFERENCE (
