@@ -1,5 +1,5 @@
 # rad_assembler
-Nextflow pipeline for reference assisted de novo assembling and annotating whole genome shotgun sequenced viruses.
+Nextflow pipeline for reference assisted de novo assembling whole genome shotgun sequenced viruses.
 
 ## Usage
 Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) (`>=21.10.3`)
