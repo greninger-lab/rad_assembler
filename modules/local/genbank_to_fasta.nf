@@ -28,7 +28,7 @@ process GENBANK_TO_FASTA {
  
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        convert_genbank_to_gff3.py
+        biopython verswion 1.81
     END_VERSIONS
     """
 }

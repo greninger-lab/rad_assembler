@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema",
     "$id": "https://raw.githubusercontent.com/nf-core/rad/master/nextflow_schema.json",
     "title": "nf-core/rad pipeline parameters",
-    "description": "A pipeline for assembling and annotating genomes.",
+    "description": "A pipeline for assembling genomes.",
     "type": "object",
     "definitions": {
         "input_output_options": {
@@ -254,9 +254,6 @@
                 "maf_convert": {
                     "type": "string"
                 },
-                "convert_genbank_to_gff": {
-                    "type": "string"
-                },
                 "edit_ivar_variants": {
                     "type": "string"
                 }             
@@ -276,7 +273,10 @@
                 },
                 "region_map": {
                     "type": "string"
-                }
+                },
+                "scrub_human": {
+                    "type": "boolean"
+                }                
             }
         },
         "variants": {

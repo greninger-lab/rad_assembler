@@ -40,6 +40,7 @@ include { MUGSY } from '../modules/local/mugsy'
 include { MAKE_REFERENCE } from '../modules/local/make_reference'
 include { GENERATE_CONSENSUS } from '../modules/local/generate_consensus'
 include { GENBANK_TO_FASTA } from '../modules/local/genbank_to_fasta'
+include { SRA_SCRUB_HUMAN } from '../modules/local/sra_scrub_human.nf'
 include { BWA_MEM_ALIGN as BWA_MEM_ALIGN_NEW_REF } from '../modules/local/bwa_mem_align'
 include { IVAR_CONSENSUS } from '../modules/local/ivar_consensus'
 include { IVAR_VARIANTS } from '../modules/local/ivar_variants'
@@ -78,6 +79,7 @@ include { GUNZIP as GUNZIP_MAF_TO_SAM } from '../modules/nf-core/gunzip/main'
 include { BOWTIE2_BUILD as BOWTIE2_BUILD_NEW_REFERENCE } from '../modules/nf-core/bowtie2/build/main'
 include { BOWTIE2_BUILD as BOWTIE2_BUILD_REFERENCE } from '../modules/nf-core/bowtie2/build/main'
 include { BOWTIE2_BUILD as BOWTIE2_BUILD_FINAL_REFERENCE } from '../modules/nf-core/bowtie2/build/main'
+include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_REFERENCE } from '../modules/nf-core/bowtie2/align/main'
 include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_HOST_REFERENCE } from '../modules/nf-core/bowtie2/align/main'
 include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_NEW_REFERENCE } from '../modules/nf-core/bowtie2/align/main'
 include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_FINAL_REFERENCE } from '../modules/nf-core/bowtie2/align/main'
@@ -162,12 +164,18 @@ workflow RAD {
         ch_trimmed_reads = BOWTIE2_ALIGN_HOST_REFERENCE.out.fastq
     }
 
-	FASTQ_ALIGN_BOWTIE2 ( 
+    if (params.scrub_human) {
+        SRA_SCRUB_HUMAN (
+            ch_trimmed_reads
+        )
+        ch_trimmed_reads = SRA_SCRUB_HUMAN.out.reads
+    }
+
+	BOWTIE2_ALIGN_REFERENCE (
         ch_trimmed_reads,
         ch_trimmed_reads.map { [it[0]] }.combine(ch_bowtie2_index),
 		params.save_bowtie2_unaligned,
-		params.sort_bowtie2_bam,
-        ch_trimmed_reads.map { [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta)
+		params.sort_bowtie2_bam
 	)
 
     FASTQC_TRIMMED (
@@ -218,7 +226,7 @@ workflow RAD {
     )
 
     IVAR_VARIANTS (
-        FASTQ_ALIGN_BOWTIE2.out.bam,
+        BOWTIE2_ALIGN_REFERENCE.out.bam,
         GENBANK_TO_FASTA.out.fasta,
         GENBANK_TO_FASTA.out.genes_gff
     )

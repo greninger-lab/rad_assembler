@@ -1,0 +1,16 @@
+{
+	"regions": {
+		"TRL" : [0,1323],
+	 	"UL" : [1324,194342],
+		"IRL_IRS" : [194343,197625],
+		"US" : [197626,233107],
+		"TRS" : [233108,235645]
+	},
+	"region_order": [
+		{"region": "TRL", "reverse": false}, 
+		{"region": "UL", "reverse": false}, 
+		{"region": "IRL_IRS", "reverse": false}, 
+		{"region": "US", "reverse": false},
+		{"region": "TRS", "reverse": false}
+	]
+}
