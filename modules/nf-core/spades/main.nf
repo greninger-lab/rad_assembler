@@ -2,13 +2,13 @@ process SPADES {
     tag "$meta.id"
     label 'process_high'
 
-    conda "bioconda::spades=3.15.5"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/spades:3.15.5--h95f258a_1' :
         'biocontainers/spades:3.15.5--h95f258a_1' }"
 
     input:
     tuple val(meta), path(illumina) //, path(pacbio), path(nanopore)
+    val(spades_flag)
     //path yml
     //path hmm
 
@@ -39,6 +39,7 @@ process SPADES {
         $args \\
         --threads $task.cpus \\
         --memory $maxmem \\
+        --${spades_flag} \\
         $reads \\
         -o ./
     mv spades.log ${prefix}.spades.log

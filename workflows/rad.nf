@@ -183,7 +183,8 @@ workflow RAD {
     )
 
     SPADES (
-        ch_trimmed_reads
+        ch_trimmed_reads,
+        params.spades_flag
     )
 
     GUNZIP (
