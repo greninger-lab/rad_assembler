@@ -70,7 +70,8 @@ include { FASTQ_ALIGN_BOWTIE2 as FASTQ_ALIGN_BOWTIE2_NEW_REF } from '../subworkf
 // include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
-include { SPADES } from '../modules/nf-core/spades/main' 
+include { SPADES } from '../modules/nf-core/spades/main'
+include { UNICYCLER } from '../modules/nf-core/unicycler/main'
 include { GUNZIP } from '../modules/nf-core/gunzip/main'
 include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_ALIGNED } from '../modules/nf-core/samtools/view/main'
 include { SAMTOOLS_SORT as SAMTOOLS_SORT_ALIGNED } from '../modules/nf-core/samtools/sort/main'
@@ -182,13 +183,26 @@ workflow RAD {
        ch_trimmed_reads
     )
 
-    SPADES (
-        ch_trimmed_reads,
-        params.spades_flag
-    )
+    ch_scaffolds = Channel.empty()
+
+    if (params.spades_flag == "unicycler") {
+        
+        UNICYCLER (
+            ch_trimmed_reads
+        )
+        ch_scaffolds = UNICYCLER.out.scaffolds
+
+    } else {
+        
+        SPADES (
+            ch_trimmed_reads,
+            params.spades_flag
+        )
+        ch_scaffolds = SPADES.out.scaffolds
+    }
 
     GUNZIP (
-        SPADES.out.scaffolds
+        ch_scaffolds
     )
 
     if (params.region_map) { ch_regions = GENBANK_TO_FASTA.out.regions } else { ch_regions = [] }

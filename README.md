@@ -14,7 +14,7 @@ Install [`Docker`](https://docs.docker.com/engine/installation/)
         --bowtie2_host_index PATH_TO_HOST_BOWTIE2_INDEX \ # optional (path to bowtie2 index of host to use for filtering host DNA)
         --region_map PATH_TO_REGION_MAP_FILE \            # optional (path to region map json file)
         --genbank_ref ../NC_XXXXXXXX.gb \                 # required (genbank reference)
-        --spades_flag \                                   # optional (default is "meta", alternative is "careful")
+        --spades_flag \                                   # optional (default is meta, alternatives are careful or unicycler)
         -profile docker \                                 # required
         -with-tower \                                     # optional (use if you want to use Nextflow Tower)
         -c nextflow_aws.config \                          # optional (AWS account config info) 
