@@ -30,8 +30,11 @@ def parse_gff(file_path):
             for attr in attributes:
                 attr = attr.strip()
                 if attr:
-                    key, value = attr.split('=')
-                    attr_dict[key] = value
+                    if "=" in attr:
+                        key, value = attr.split('=')
+                        attr_dict[key] = value
+                    else:
+                        attr_dict[attr] = ""
 
             if feature_type == 'CDS':
                 product = attr_dict.get('product')
