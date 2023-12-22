@@ -39,6 +39,12 @@ def parse_gff(file_path):
             if feature_type == 'CDS':
                 product = attr_dict.get('product')
                 gene = attr_dict.get('gene')
+                if gene == None:
+                    gene = attr_dict.get('locus_tag')
+                    if gene == None:
+                        gene = "No annotation"
+                if product == None:
+                    product = "No annotation"
                 cds_dict[(start, end)] = gene + " (" + product + ")"
 
     return cds_dict
