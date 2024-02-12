@@ -15,7 +15,7 @@ process GET_BEST_REFERENCE {
     tuple val(meta), path("*.gb"), emit: gb
     //tuple val(meta), path("*.txt"), emit: txt
     tuple val(meta), path("*.log"), emit: log
-    tuple val(meta), path("*.stats"), emit: stats
+    //tuple val(meta), path("*.stats"), emit: stats
     //tuple val(meta), path("*.fasta")
     //tuple val(meta), path("*.bam")
     //tuple val(meta), path("*.sam")
