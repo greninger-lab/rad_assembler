@@ -276,7 +276,10 @@
                 },
                 "scrub_human": {
                     "type": "boolean"
-                }                
+                },
+                "find_reference": {
+                    "type": "string"
+                }             
             }
         },
         "spades": {

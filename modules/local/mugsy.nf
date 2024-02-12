@@ -14,6 +14,7 @@ process MUGSY {
     path(maf_convert)
     path(make_reference)
     path(region_map)
+    //path(hybrid_ref)
     path(configure_reference)
 
     output:
@@ -41,7 +42,7 @@ process MUGSY {
         sed '/^a score=0/,\$d' ${prefix}_aligned_scaffolds_\${ref_name/./_}.maf > ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.maf
         /usr/bin/python2.7 ${maf_convert} -d sam ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.maf > ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.sam
         samtools view -bS -T ${fasta_ref} ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.sam | samtools sort > ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.bam
-        Rscript --vanilla make_reference.R ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.bam ${fasta_ref}
+        Rscript --vanilla make_reference.R ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.bam ${fasta_ref} 200
         mv ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}_consensus.fasta ${meta.id}_new_ref_consensus.fasta
     else
         # Loop through all regions of the reference and concatenate resulting new region references as defined in region_map
@@ -53,10 +54,22 @@ process MUGSY {
             sed '/^a score=0/,\$d' ${prefix}_aligned_scaffolds_\${ref_name/./_}.maf > ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.maf
             /usr/bin/python2.7 ${maf_convert} -d sam ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.maf > ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.sam
             samtools view -bS -T \$ref ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.sam | samtools sort > ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.bam
-            Rscript --vanilla make_reference.R ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.bam \$ref 
+            Rscript --vanilla make_reference.R ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.bam \$ref 20
         done
 
+        #cat *nonzero_region*consensus.fasta *nonzero_region*consensus.fasta > ${meta.id}_query.fasta
+        #mv ${meta.id}_sb_Scaffold.fasta ${meta.id}_sb_new_ref_consensus.fasta
+
         python3 configure_reference.py -r ${region_map} --build_reference -s ${meta.id}_aligned_scaffolds_nonzero_region ${genbank_ref}
+
+        # mv ${meta.id}_aligned_scaffolds_nonzero_region_new_ref_consensus.fasta ${meta.id}_new_ref.fasta
+        # mugsy --directory ./ --prefix ${prefix}_aligned_scaffolds_concat ${meta.id}_new_ref.fasta ${scaffolds}
+        # sed '/^a score=0/,\$d' ${prefix}_aligned_scaffolds_concat.maf > ${prefix}_aligned_scaffolds_nonzero_concat.maf
+        # /usr/bin/python2.7 ${maf_convert} -d sam ${prefix}_aligned_scaffolds_nonzero_concat.maf > ${prefix}_aligned_scaffolds_nonzero_concat.sam
+        # samtools view -bS -T ${meta.id}_new_ref.fasta ${prefix}_aligned_scaffolds_nonzero_concat.sam | samtools sort > ${prefix}_aligned_scaffolds_nonzero_concat.bam
+        # Rscript --vanilla make_reference.R ${prefix}_aligned_scaffolds_nonzero_concat.bam ${meta.id}_new_ref.fasta
+        # mv ${prefix}_aligned_scaffolds_nonzero_concat_consensus.fasta ${meta.id}_sb_new_ref_consensus.fasta
+
     fi
 
 

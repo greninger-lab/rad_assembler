@@ -30,21 +30,12 @@ def parse_gff(file_path):
             for attr in attributes:
                 attr = attr.strip()
                 if attr:
-                    if "=" in attr:
-                        key, value = attr.split('=')
-                        attr_dict[key] = value
-                    else:
-                        attr_dict[attr] = ""
+                    key, value = attr.split('=')
+                    attr_dict[key] = value
 
             if feature_type == 'CDS':
                 product = attr_dict.get('product')
                 gene = attr_dict.get('gene')
-                if gene == None:
-                    gene = attr_dict.get('locus_tag')
-                    if gene == None:
-                        gene = "No annotation"
-                if product == None:
-                    product = "No annotation"
                 cds_dict[(start, end)] = gene + " (" + product + ")"
 
     return cds_dict

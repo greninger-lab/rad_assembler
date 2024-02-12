@@ -6,7 +6,8 @@ RUN apt-get update && apt-get install -y wget \
    build-essential \
    perl \
    perl-doc \
-   python2.7
+   python2.7 
+
 
 # install mugsy
 RUN wget https://sourceforge.net/projects/mugsy/files/mugsy_x86-64-v1r2.2.tgz && \
@@ -112,6 +113,13 @@ RUN wget https://github.com/samtools/samtools/releases/download/1.9/samtools-1.9
 	make
 
 RUN apt-get install -y python3-pip
+RUN pip3 install --upgrade pip 
+RUN pip3 install --upgrade setuptools
 RUN pip3 install biopython
 
-ENV PATH=${PATH}:/usr/src/samtools-1.9:/usr/bin
+RUN apt-get install -y git
+RUN apt-get install -y mummer=3.23+dfsg-3
+
+ADD scaffold_builder.py /scaffold_builder.py
+
+ENV PATH=${PATH}:/usr/src/samtools-1.9:/usr/bin:/mugsy_x86-64-v1r2.2/MUMmer3.20

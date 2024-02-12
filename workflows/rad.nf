@@ -42,6 +42,7 @@ include { GENERATE_CONSENSUS } from '../modules/local/generate_consensus'
 include { GENBANK_TO_FASTA } from '../modules/local/genbank_to_fasta'
 include { SRA_SCRUB_HUMAN } from '../modules/local/sra_scrub_human.nf'
 include { BWA_MEM_ALIGN as BWA_MEM_ALIGN_NEW_REF } from '../modules/local/bwa_mem_align'
+include { GET_BEST_REFERENCE } from '../modules/local/get_best_reference'
 include { IVAR_CONSENSUS } from '../modules/local/ivar_consensus'
 include { IVAR_VARIANTS } from '../modules/local/ivar_variants'
 include { FORMAT_VARIANTS } from '../modules/local/format_variants'
@@ -205,18 +206,50 @@ workflow RAD {
         ch_scaffolds
     )
 
-    if (params.region_map) { ch_regions = GENBANK_TO_FASTA.out.regions } else { ch_regions = [] }
+    if (params.find_reference) {
+        
+        GUNZIP.out.gunzip.map {[it[0], it[1]]}
+            .join(ch_trimmed_reads)
+            .join(BOWTIE2_ALIGN_REFERENCE.out.bam).set{ch_scaffolds}
 
-    MUGSY (
-        GUNZIP.out.gunzip.map {[it[0], it[1]]},
-        GENBANK_TO_FASTA.out.fasta,
-        ch_genbank_ref,
-        ch_regions,
-        params.maf_convert,
-        params.make_reference,
-        ch_region_map,
-        params.configure_reference
-    )
+        GET_BEST_REFERENCE (
+            ch_scaffolds,
+            params.find_reference
+        )
+            
+        ch_scaffolds
+            .join(GET_BEST_REFERENCE.out.regions)
+            .join(GET_BEST_REFERENCE.out.region_map)
+            .join(GET_BEST_REFERENCE.out.gb)
+            //.map { meta, scaffolds, regions, region_map, gb -> [ meta, scaffolds, regions, region_map, gb ] }
+            .set {ch_best_ref}
+
+        MUGSY (
+            ch_best_ref.map {[it[0], it[1]]},
+            [],
+            ch_best_ref.map {it[6]},
+            ch_best_ref.map {it[4]},
+            params.maf_convert,
+            params.make_reference,
+            ch_best_ref.map {[it[5]]},
+            params.configure_reference
+        )
+
+    } else {
+
+        if (params.region_map) { ch_regions = GENBANK_TO_FASTA.out.regions } else { ch_regions = [] }
+        
+        MUGSY (
+            GUNZIP.out.gunzip.map {[it[0], it[1]]},
+            GENBANK_TO_FASTA.out.fasta,
+            ch_genbank_ref,
+            ch_regions,
+            params.maf_convert,
+            params.make_reference,
+            ch_region_map,
+            params.configure_reference
+        )
+    }
 
     BOWTIE2_BUILD_NEW_REFERENCE (
        MUGSY.out.new_ref
