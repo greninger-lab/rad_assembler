@@ -23,10 +23,7 @@ process GET_BEST_REFERENCE {
 
     script:
     """
-    
-    
-    
-    touch t
+    touch t.t
     /genome_identification/${find_ref_model}/get_top_hit.sh ${scaffolds}
     mapped_reads=`samtools view -F 4 -c ${mapped_ref_bam}`
     python3 /genome_identification/${find_ref_model}/extract_build_reference.py ${scaffolds} ${meta.id} ${reads[0]} ${reads[1]} \$mapped_reads ${task.cpus}
