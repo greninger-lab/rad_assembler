@@ -38,7 +38,7 @@ if ".gz" in fastq_2:
     fastq_2 = fastq_2[:fastq_2.index(".gz")]
 
 # Curated list of HCMV genomes and the regions extracted from their published 
-# annotation.  Region info may or may not be trustworthy. 
+# annotation.  Region info may or may not be entirely trustworthy. 
 gb_genomes = "/genome_identification/cmv/cmv_genomes.gb"
 gb_genomes_regions = "/genome_identification/cmv/cmv_genomes_regions.json"
 
@@ -100,7 +100,7 @@ with open(merlin_pretrs1_start_file_name, "w") as pretrs1_start_outfile:
     pretrs1_start_record = merlin_record[merlin_pretrs1_start-300:merlin_pretrs1_start]
     SeqIO.write(pretrs1_start_record, pretrs1_start_outfile, 'fasta')    
 
-# return the longest of the top query hits
+# return the highest bitscore of the top query hits
 def top_hit(file_name):
     try:
         df = pd.read_csv(file_name,sep='\t',header=None)
@@ -114,7 +114,7 @@ def write_region(region_name, sequence):
     with open(region_name + ".fasta", 'w') as out:
         out.write(">" + region_name + "\n" + sequence)
 
-# Get the top hit for the hyper variable region of UL and top hit for the 'a region' and TRS1
+# Get the top bitscore hit for the hyper variable region of UL and top hit for the 'a region' and TRS1
 hyper_hit_file = sys.argv[1] + ".hyper.txt"
 hyper_hit = top_hit(hyper_hit_file)
 hyper_hit_regions = regions_dict[hyper_hit[:hyper_hit.index(".")]]
@@ -267,7 +267,7 @@ def extend_contig_map(contig_record, extend_direction, fastq_1, fastq_2, ignore_
     subprocess.run(["tadpole.sh", "in=" + fasta_name, "extra=" + fastq_1 + "," + fastq_2, "out=" + extended_fasta, extend_flag, "overwrite=true" , ibb, "mode=extend"])
     extended_fasta_exists = os.path.isfile("./" + extended_fasta)
     if not extended_fasta_exists:
-        logging.debug("Tadpole did not generate an extension fasta.  This may be a complete contig.")
+        logging.debug("Tadpole did not generate an extension fasta.")
         return contig_record
     new_record = next(SeqIO.parse(extended_fasta, "fasta"))
     new_seq_str = str(new_record.seq)        
@@ -918,7 +918,7 @@ def find_TATTTA(sequence):
 # Remove any old scaffold files
 subprocess.run(["rm *scaffold.fasta"], shell=True)
 
-# Begin scaffolding, joining if necessary, extracting IRL, IRS, and setting TRL and TRS
+# Begin scaffolding
 logging.debug("Initial scaffold file: more than one contig detected. Extend and join contigs.")
 # Extend all contigs
 new_contigs = []
