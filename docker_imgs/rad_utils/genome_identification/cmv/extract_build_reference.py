@@ -12,6 +12,7 @@ import logging
 from enum import Enum
 
 
+
 # 6 command line args are required - scaffolds_file, sample_id, fastq_1, fastq_2, mapped_reads_log, cpus
 scaffolds_file = sys.argv[1]
 meta_id = sys.argv[2]
@@ -27,8 +28,8 @@ with open(meta_id + ".stats", 'w') as out:
 
 print("Contig total: " + str(num_contigs_in_scaffold) + " Total reads mapped to reference: " + str(mapped_reads))
 
-if num_contigs_in_scaffold >= 15 or mapped_reads < 200000:
-    sys.exit(0)
+# if num_contigs_in_scaffold >= 15 or mapped_reads < 200000:
+#     sys.exit(0)
 
 if ".gz" in fastq_1:
     subprocess.run(["gunzip", "-f", fastq_1])
