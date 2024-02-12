@@ -12,7 +12,7 @@ import logging
 from enum import Enum
 
 
-# 4 command line args are required - scaffolds_file, sample_id, fastq_1, fastq_2
+# 5 command line args are required - scaffolds_file, sample_id, fastq_1, fastq_2, cpus
 scaffolds_file = sys.argv[1]
 meta_id = sys.argv[2]
 fastq_1 = sys.argv[3]
