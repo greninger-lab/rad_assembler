@@ -194,9 +194,12 @@ with open(trs1_end_tag_file_name, "w") as trs1_end_tag_outfile:
 pretrs1_hit_file = sys.argv[1] + ".pretrs1.txt"
 pretrs1_hit = top_hit(pretrs1_hit_file)
 if not pretrs1_hit:
-    pretrs1_hit = "NC_006273.2"
-pretrs1_record = get_genbank_record(pretrs1_hit)
-pretrs1_regions = regions_dict[pretrs1_hit[:pretrs1_hit.index(".")]]  
+    pretrs1_hit = merlin_ref_name
+    pretrs1_record = get_genbank_record(pretrs1_hit)
+    pretrs1_regions = regions_dict[pretrs1_hit]  
+else:
+    pretrs1_record = get_genbank_record(pretrs1_hit)
+    pretrs1_regions = regions_dict[pretrs1_hit[:pretrs1_hit.index(".")]]  
 pretrs1_start = pretrs1_regions["regions"]["PRETRS1"][0]
 pretrs1_end = pretrs1_regions["regions"]["PRETRS1"][1]
 pretrs1_only_record = str(pretrs1_record.seq[pretrs1_start:pretrs1_end])
