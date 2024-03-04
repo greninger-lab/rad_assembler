@@ -7,9 +7,11 @@ process CLEANUP {
 
     input:
     path summary_tsv_files
+    val  is_failed_summary
+
 
     output:
-    path "summary.tsv", emit: summary
+    path "summary*.tsv", emit: summary
     path "versions.yml"           , emit: versions
 
     when:
@@ -17,9 +19,10 @@ process CLEANUP {
 
     script:
     def args = task.ext.args ?: ''
+    def summary_file_name = is_failed_summary ? "summary_failed.tsv" : "summary.tsv"
     """
     echo "sample_name\traw_reads\ttrimmed_reads\tpct_reads_trimmed\tmapped_reads\tpct_reads_mapped\tpct_genome_covered\tmean_genome_coverage\tconsensus_length\tnum_ns\tnum_ambiguous" > summary.tsv
-    awk '(NR == 2) || (FNR > 1)' *.summary.tsv >> summary.tsv 
+    awk '(NR == 2) || (FNR > 1)' *.summary.tsv >> $summary_file_name
     
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

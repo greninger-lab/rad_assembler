@@ -2,12 +2,10 @@ process SUMMARY {
     tag "$meta.id"
     label 'process_single'
 
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/':
-        'staphb/samtools:1.17' }"
+    container "${ 'staphb/samtools:1.17' }"
 
     input:
-    tuple val(meta), path(rlog), path(qlog), path(align_new_ref_bam), path(consensus)
+    tuple val(meta), path(rlog), path(qlog), path(align_new_ref_bam), path(consensus), val(reads_mapped)
 
     output:
     path("*.tsv"), emit: summary_tsv
@@ -22,6 +20,12 @@ process SUMMARY {
 
     """
     # raw reads and trimmed reads  
+
+
+
+
+
+    touch ttt
     raw_reads=`grep "Input:" ${rlog} | awk '{print \$2}'`
     trimmed_reads=`grep "Result:" ${qlog} | awk '{print \$2}'` 
     

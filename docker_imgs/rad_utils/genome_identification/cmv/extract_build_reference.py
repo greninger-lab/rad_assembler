@@ -43,7 +43,7 @@ def get_genbank_record(name):
             return gb_record
     return None
 
-# Gather information from a standard Merlin reference to use as a
+# Gather information from Merlin reference to use as a
 # defining, consistent coordinate system for large regions.
 merlin_ref_name = "NC_006273"
 
@@ -89,7 +89,7 @@ with open(merlin_pretrs1_start_file_name, "w") as pretrs1_start_outfile:
     pretrs1_start_record = merlin_record[merlin_pretrs1_start-300:merlin_pretrs1_start]
     SeqIO.write(pretrs1_start_record, pretrs1_start_outfile, 'fasta')    
 
-# return the longest of the top query hits
+# return the best bitscore of the top query hits
 def top_hit(file_name):
     try:
         df = pd.read_csv(file_name,sep='\t',header=None)
@@ -103,10 +103,16 @@ def write_region(region_name, sequence):
     with open(region_name + ".fasta", 'w') as out:
         out.write(">" + region_name + "\n" + sequence)
 
-# Get the top hit for the hyper variable region of UL and top hit for the 'a region' and TRS1
+# Get the top bitscore for the hyper variable region of UL
 hyper_hit_file = sys.argv[1] + ".hyper.txt"
 hyper_hit = top_hit(hyper_hit_file)
-hyper_hit_regions = regions_dict[hyper_hit[:hyper_hit.index(".")]]
+# Use Merlin if no hyper_hit.  This is a bad sign and suggests low reads on target
+# or poor coverage.
+if not hyper_hit:
+    hyper_hit = merlin_ref_name
+    hyper_hit_regions = regions_dict[hyper_hit]
+else:
+    hyper_hit_regions = regions_dict[hyper_hit[:hyper_hit.index(".")]]
 hyper_hit_record = get_genbank_record(hyper_hit)
 hyper_complete_file_name = hyper_hit + "_complete.fasta"
 with open(hyper_complete_file_name, "w") as hyper_complete_outfile:
@@ -126,8 +132,14 @@ with open(hyper_hit_ul_start_file_name, "w") as hyper_ul_start_outfile:
 
 irl_irs_hit_file = sys.argv[1] + ".irl_irs.txt"
 irl_irs_hit = top_hit(irl_irs_hit_file)
-irl_irs_hit_regions = regions_dict[irl_irs_hit[:irl_irs_hit.index(".")]]
-irl_irs_hit_record = get_genbank_record(irl_irs_hit)
+# if there is no best hit for irl_irs region, use Merlin
+if not irl_irs_hit:
+    irl_irs_hit = merlin_ref_name
+    irl_irs_hit_record = get_genbank_record(merlin_ref_name)
+    irl_irs_hit_regions = regions_dict[merlin_ref_name]
+else:
+    irl_irs_hit_regions = regions_dict[irl_irs_hit[:irl_irs_hit.index(".")]]
+    irl_irs_hit_record = get_genbank_record(irl_irs_hit)
 irl_irs_start = irl_irs_hit_regions["regions"]["IRL_IRS"][0]
 irl_irs_end = irl_irs_hit_regions["regions"]["IRL_IRS"][1]
 irl_irs_only_record = str(irl_irs_hit_record.seq[irl_irs_start:irl_irs_end])
@@ -142,7 +154,9 @@ trl_hit_file = sys.argv[1] + ".trl.txt"
 trl_hit = top_hit(trl_hit_file)
 if not trl_hit:
     trl_hit = irl_irs_hit
-trl_hit_regions = regions_dict[trl_hit[:trl_hit.index(".")]]
+    trl_hit_regions = irl_irs_hit_regions
+else:
+    trl_hit_regions = regions_dict[trl_hit[:trl_hit.index(".")]]
 trl_hit_record = get_genbank_record(trl_hit)
 trl_start = trl_hit_regions["regions"]["TRL"][0]
 trl_end = trl_hit_regions["regions"]["TRL"][1]
@@ -154,7 +168,9 @@ trs_hit_file = sys.argv[1] + ".trs.txt"
 trs_hit = top_hit(trs_hit_file)
 if not trs_hit:
     trs_hit = irl_irs_hit
-trs_hit_regions = regions_dict[trs_hit[:trs_hit.index(".")]]
+    trs_hit_regions = irl_irs_hit_regions
+else:    
+    trs_hit_regions = regions_dict[trs_hit[:trs_hit.index(".")]]
 trs_hit_record = get_genbank_record(trs_hit)
 trs_start = trs_hit_regions["regions"]["TRS"][0]
 trs_end = trs_hit_regions["regions"]["TRS"][1]
@@ -166,7 +182,9 @@ a_hit_file = sys.argv[1] + ".a.txt"
 a_hit = top_hit(a_hit_file)
 if not a_hit:
     a_hit = irl_irs_hit
-a_hit_regions = regions_dict[a_hit[:a_hit.index(".")]]
+    a_hit_regions = irl_irs_hit_regions
+else:    
+    a_hit_regions = regions_dict[a_hit[:a_hit.index(".")]]
 a_hit_record = get_genbank_record(a_hit)
 a_start = a_hit_regions["regions"]["A"][0]
 a_end = a_hit_regions["regions"]["A"][1]
@@ -175,9 +193,15 @@ with open(meta_id + "_a_hit.fasta", 'w') as a_out:
     a_out.write(">" + a_hit_record.name + "\n" + a_only_record)  
 
 trs1_hit_file = sys.argv[1] + ".trs1.txt"
-trs1_hit = top_hit(trs1_hit_file)    
-trs1_record = get_genbank_record(trs1_hit)
-trs1_regions = regions_dict[trs1_hit[:trs1_hit.index(".")]]  
+trs1_hit = top_hit(trs1_hit_file)
+# Use the entire US best hit if no trs1_hit.  This is a bad sign and suggests low reads on target
+# or poor coverage.
+if not trs1_hit:
+    trs1_hit = merlin_ref_name
+    trs1_regions = regions_dict[trs1_hit]
+else:
+    trs1_regions = regions_dict[trs1_hit[:trs1_hit.index(".")]]  
+trs1_record = get_genbank_record(trs1_hit) 
 trs1_start = trs1_regions["regions"]["TRS1"][0]
 trs1_end = trs1_regions["regions"]["TRS1"][1]
 trs1_only_record = str(trs1_record.seq[trs1_start:trs1_end])
@@ -200,12 +224,17 @@ if not pretrs1_hit:
 else:
     pretrs1_record = get_genbank_record(pretrs1_hit)
     pretrs1_regions = regions_dict[pretrs1_hit[:pretrs1_hit.index(".")]]  
-pretrs1_start = pretrs1_regions["regions"]["PRETRS1"][0]
-pretrs1_end = pretrs1_regions["regions"]["PRETRS1"][1]
-pretrs1_only_record = str(pretrs1_record.seq[pretrs1_start:pretrs1_end])
-with open(meta_id + "_pretrs1_hit.fasta", 'w') as pretrs1_out:
-    pretrs1_out.write(">" + pretrs1_record.name + "_pretrs1\n" + pretrs1_only_record) 
+# pretrs1_start = pretrs1_regions["regions"]["PRETRS1"][0]
+# pretrs1_end = pretrs1_regions["regions"]["PRETRS1"][1]
+# pretrs1_only_record = str(pretrs1_record.seq[pretrs1_start:pretrs1_end])
+# with open(meta_id + "_pretrs1_hit.fasta", 'w') as pretrs1_out:
+#     pretrs1_out.write(">" + pretrs1_record.name + "_pretrs1\n" + pretrs1_only_record) 
+with open(meta_id + "_pretrs1_complete.fasta", 'w') as pretrs1_out:
+    pretrs1_out.write(">" + pretrs1_record.name + "_pretrs1_complete\n" + str(pretrs1_record.seq)) 
 
+# Try to identify the best IRL_IRS region by first checking to see if there is a
+# common high bitscore between trl_hit_file and trs_hit_file.  If not, use
+# irl_irs_hit_file.
 def find_top_combined_hit(trl_hit_file, trs_hit_file, irl_irs_hit_file):
     try:
         df_1 = pd.read_csv(trl_hit_file,sep='\t',header=None)
@@ -219,7 +248,8 @@ def find_top_combined_hit(trl_hit_file, trs_hit_file, irl_irs_hit_file):
     except pd.errors.EmptyDataError:
         best_hit = top_hit(irl_irs_hit_file)
         if not best_hit:
-            logging.debug("Failed to get any hit from TRL, TRS, IRL_IRS. Probably not worth proceeding with this sample.")
+            logging.debug("Failed to get any hit from TRL, TRS, IRL_IRS. Using Merlin.")
+            return merlin_ref_name
     return best_hit
 
 class ExtendDirection(Enum):
@@ -342,7 +372,6 @@ def get_contig_by_tag_fasta(scaffolds_file, tag_fasta_file_name, return_name_and
     logging.debug("Did not find tag_start.")       
     return None
 
-#python3 /genome_identification/cmv/extract_build_reference.py CMV_S1_0M_best_ref.scaffolds.fa CMV_S1_0M_best_ref CMV_S1_0M_best_ref.preprocessed_1.fastq CMV_S1_0M_best_ref.preprocessed_2.fastq
 def run_minimap2(target_sequence_file, query_sequence_file):
 
     paf_filename = meta_id + ".paf"
@@ -639,7 +668,6 @@ def remove_contigs_replace_region(replace_region_start, replace_region_end, cont
     no_hit_contigs = []
     if replace_region_start:
         logging.debug("Found replace_region_start. Start: " + str(replace_region_start)) 
-        # Get UL_start contig and extend with hyper variable hit UL
         for unfinished_record in contigs:
             if unfinished_record.name == replace_region_start["name"]:
                 if replace_region_start["reverse"]:
@@ -744,7 +772,9 @@ def join_contigs_by_irl_irs(fasta_file, start_sequence_name, overlap_end_ul_cont
 
     top_irl_irs_hit = find_top_combined_hit(trl_hit_file, trs_hit_file, irl_irs_hit_file)
     top_irl_irs_record = get_genbank_record(top_irl_irs_hit)
-    top_irl_irs_regions = regions_dict[top_irl_irs_hit[:top_irl_irs_hit.index(".")]]
+    if "." in top_irl_irs_hit:
+        top_irl_irs_hit = top_irl_irs_hit[:top_irl_irs_hit.index(".")]
+    top_irl_irs_regions = regions_dict[top_irl_irs_hit]
     irl_irs_start = top_irl_irs_regions["regions"]["IRL_IRS"][0]
     irl_irs_end = top_irl_irs_regions["regions"]["IRL_IRS"][1]
     irl_irs = str(top_irl_irs_record.seq[irl_irs_start:irl_irs_end])
@@ -807,6 +837,8 @@ def join_contigs_by_irl_irs(fasta_file, start_sequence_name, overlap_end_ul_cont
 
 def join_contigs_by_pretrs1(fasta_file, start_sequence_name, contig_1, contig_2):
     sequences = SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta"))
+    start_record = sequences[contig_1["name"]]
+    end_record = sequences[contig_2["name"]]
 
     if start_sequence_name not in sequences:
         print(f"Sequence with name {start_sequence_name} not found in the input FASTA file.")
@@ -817,6 +849,11 @@ def join_contigs_by_pretrs1(fasta_file, start_sequence_name, contig_1, contig_2)
     with open(start_name_fasta, "w") as start_outfile:
         SeqIO.write(sequences[start_sequence_name], start_outfile, 'fasta')
 
+    start_pretrs1_contig = get_contig_by_tag_fasta(meta_id + "_pretrs1_complete.fasta", merlin_pretrs1_start_file_name, True)
+    end_pretrs1_contig = get_contig_by_tag_fasta(meta_id + "_pretrs1_complete.fasta", merlin_pretrs1_end_file_name, True)
+
+    with open(meta_id + "_pretrs1_hit.fasta", "w") as pretrs1_hit_outfile:
+        pretrs1_hit_outfile.write(">" + meta_id + "_pretrs1_hit\n" + str(pretrs1_record.seq[start_pretrs1_contig["end"]:end_pretrs1_contig["start"]]) + "\n")
     top_pretrs1_fasta = meta_id + "_pretrs1_hit.fasta"
     pretrs1_scaffold_fasta = map_and_de_novo_assemble_region("pretrs1", top_pretrs1_fasta, True)
     records = SeqIO.parse(pretrs1_scaffold_fasta, "fasta")
@@ -829,7 +866,20 @@ def join_contigs_by_pretrs1(fasta_file, start_sequence_name, contig_1, contig_2)
     else:
         logging.debug("De novo assembly of extracted pretrs1 reads generated 1 contig.")
         subprocess.run(["mv", pretrs1_scaffold_fasta, meta_id + "_best_pretrs1.fasta"])
-    new_pretrs1_record = next(SeqIO.parse(meta_id + "_best_pretrs1.fasta","fasta"))
+
+    new_pretrs1_record_list = list(SeqIO.parse(meta_id + "_best_pretrs1.fasta","fasta"))
+    logging.debug("new_pretrs1_records list length: " + str(len(new_pretrs1_record_list)))
+    if len(new_pretrs1_record_list) == 0:
+        joined_contig = SeqRecord(
+                        Seq(str(start_record.seq) + str(pretrs1_record.seq[start_pretrs1_contig["end"]:end_pretrs1_contig["start"]]) + str(end_record.seq)),
+                        id="pretrs1_joined",
+                        name="pretrs1_joined",
+                        description="",
+                    )
+        logging.debug("Join contigs by pretrs1 generated a single contig after appending at merlin coordinates length: " + str(len(joined_contig.seq)))        
+        return [joined_contig]
+    
+    new_pretrs1_record = new_pretrs1_record_list[0]
     extended_pretrs1_record = extend_contig(new_pretrs1_record, ExtendDirection.BOTH, fastq_1, fastq_2, 0, True)
     extended_pretrs1_record.id = meta_id + "_extended_pretrs1"
     extended_pretrs1_record.name = meta_id + "_extended_pretrs1"
@@ -855,11 +905,8 @@ def join_contigs_by_pretrs1(fasta_file, start_sequence_name, contig_1, contig_2)
                 logging.debug("Join contigs by pretrs1 generated a multiple contigs with one contig > 232000: " + str(len(record.seq)))
                 return overlap_records
         # join contigs by using merlin coordinates
-        sequences = SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta"))
-        start_record = sequences[contig_1["name"]]
-        end_record = sequences[contig_2["name"]]
         joined_contig = SeqRecord(
-                                Seq(str(start_record.seq) + pretrs1_only_record + str(end_record.seq)),
+                                Seq(str(start_record.seq) + str(pretrs1_record.seq[start_pretrs1_contig["end"]:end_pretrs1_contig["start"]]) + str(end_record.seq)),
                                 id="pretrs1_joined",
                                 name="pretrs1_joined",
                                 description="",
@@ -1074,12 +1121,12 @@ with open(meta_id + "_pretrs1_contigs.fasta", "w") as pretrs1_outfile:
     SeqIO.write(pretrs1_records, pretrs1_outfile, 'fasta')
 
 pretrs1_start_contig = {"name": consensus_record.id + "_1", "start": pretrs1_initial_start_contig["start"], "end": pretrs1_initial_start_contig["end"]-1}
-pretrs1_end_tag_end = pretrs1_initial_start_contig["end"] - pretrs1_initial_start_contig["start"] -1
+pretrs1_end_tag_end = pretrs1_initial_end_contig["end"] - pretrs1_initial_end_contig["start"] -1
 pretrs1_end_contig = {"name": consensus_record.id + "_2", "start": 0, "end": pretrs1_end_tag_end}
 
 logging.debug("Attempting to join contigs with best PRETRS1 hit region.")
 joined_records = join_contigs_by_pretrs1(meta_id + "_pretrs1_contigs.fasta", pretrs1_start_contig["name"], pretrs1_start_contig, pretrs1_end_contig)
-logging.debug("USSUB joined contigs size: " + str(len(joined_records)))
+logging.debug("PRETRS1 joined contigs size: " + str(len(joined_records)))
 if len(joined_records) == 1:
     consensus_record = SeqRecord(
         joined_records[0].seq,
@@ -1089,6 +1136,7 @@ if len(joined_records) == 1:
     )
     with open(meta_id + "_initial_scaffold.fasta", "w") as initial_joined_scaffold_out:
         SeqIO.write(consensus_record, initial_joined_scaffold_out, 'fasta')
+    result = str(joined_records[0].seq)        
 else:
     print("Exiting joined_records size: " + str(len(joined_records)))
 
@@ -1147,9 +1195,6 @@ subprocess.run(["blastn", "-db", "/genome_identification/cmv/cmv_a_id",
 try:
     df_ul_end = pd.read_csv(consensus_record.name + "_ul_end.txt",sep='\t',header=None)
     ul_end = df_ul_end.iloc[df_ul_end[11].idxmax()][9]
-    # if hyper_hit_trl_offset > 0:
-    #     logging.debug("Extending merlin_ul_end by hyper_hit_trl_offset: " + str(hyper_hit_trl_offset))
-    #     ul_end = ul_end + hyper_hit_trl_offset
     df_us_start = pd.read_csv(consensus_record.name + "_us_start.txt",sep='\t',header=None)
     us_start = df_us_start.iloc[df_us_start[11].idxmax()][8]       
     df_a = pd.read_csv(consensus_record.name + "_a.txt",sep='\t',header=None)
@@ -1189,8 +1234,6 @@ try:
                 subject_regions = regions_dict[subject.name]
                 with open(meta_id + "_best_trl_" + subject.name + ".fasta", "w") as best_trl_out:
                     SeqIO.write(subject, best_trl_out, 'fasta')
-                #hyper_start_UL_contig = get_contig_by_tag_fasta(hyper_complete_file_name, merlin_ul_start_file_name, True)
-                #hyper_trl = hyper_hit_record.seq[:hyper_start_UL_contig["start"]]
                 best_trl_start_UL_contig = get_contig_by_tag_fasta(meta_id + "_best_trl_" + subject.name + ".fasta", merlin_ul_start_file_name, True)
                 best_trl = subject.seq[:best_trl_start_UL_contig["start"]]                
                 no_trs = str(best_trl) + no_trl_complete
@@ -1235,7 +1278,6 @@ try:
     ul_end = df_ul_end.iloc[df_ul_end[11].idxmax()][9]
     df_us_start = pd.read_csv(final_consensus_record.name + "_us_start.txt",sep='\t',header=None)
 
-    trs1_start
     final_trl = str(final_consensus_record.seq[:ul_start])
     final_ul = str(final_consensus_record.seq[ul_start:ul_end])
     final_irl_irs = str(final_consensus_record.seq[ul_end:us_start])

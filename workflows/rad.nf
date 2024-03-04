@@ -41,6 +41,7 @@ include { MAKE_REFERENCE } from '../modules/local/make_reference'
 include { GENERATE_CONSENSUS } from '../modules/local/generate_consensus'
 include { GENBANK_TO_FASTA } from '../modules/local/genbank_to_fasta'
 include { SRA_SCRUB_HUMAN } from '../modules/local/sra_scrub_human.nf'
+include { READS_MAPPED } from '../modules/local/reads_mapped.nf'
 include { BWA_MEM_ALIGN as BWA_MEM_ALIGN_NEW_REF } from '../modules/local/bwa_mem_align'
 include { GET_BEST_REFERENCE } from '../modules/local/get_best_reference'
 include { IVAR_CONSENSUS } from '../modules/local/ivar_consensus'
@@ -48,7 +49,9 @@ include { IVAR_VARIANTS } from '../modules/local/ivar_variants'
 include { FORMAT_VARIANTS } from '../modules/local/format_variants'
 include { BWA_MEM_ALIGN as BWA_MEM_ALIGN_FINAL_CONSENSUS } from '../modules/local/bwa_mem_align'
 include { SUMMARY } from '../modules/local/summary'
+include { SUMMARY as SUMMARY_FAILED } from '../modules/local/summary'
 include { CLEANUP } from '../modules/local/cleanup'
+include { CLEANUP as CLEANUP_FAILED } from '../modules/local/cleanup'
 
 
 //
@@ -184,19 +187,31 @@ workflow RAD {
        ch_trimmed_reads
     )
 
+    READS_MAPPED (
+        BOWTIE2_ALIGN_REFERENCE.out.bam
+    )
+
+    READS_MAPPED.out.reads_mapped.branch {
+        passed: it[1].toInteger() > 150000
+        failed: it[1].toInteger() <= 150000
+    }.set{ ch_reads_mapped }
+
+    ch_trimmed_reads.join(ch_reads_mapped.passed).map{ [it[0], it[1]] }.set{ ch_trimmed_reads_passed }
+    ch_trimmed_reads.join(ch_reads_mapped.failed).map{ [it[0], it[1]] }.set{ ch_trimmed_reads_failed }
+
     ch_scaffolds = Channel.empty()
 
     if (params.spades_flag == "unicycler") {
         
         UNICYCLER (
-            ch_trimmed_reads
+            ch_trimmed_reads_passed
         )
         ch_scaffolds = UNICYCLER.out.scaffolds
 
     } else {
         
         SPADES (
-            ch_trimmed_reads,
+            ch_trimmed_reads_passed,
             params.spades_flag
         )
         ch_scaffolds = SPADES.out.scaffolds
@@ -209,7 +224,7 @@ workflow RAD {
     if (params.find_reference) {
         
         GUNZIP.out.gunzip.map {[it[0], it[1]]}
-            .join(ch_trimmed_reads)
+            .join(ch_trimmed_reads_passed)
             .join(BOWTIE2_ALIGN_REFERENCE.out.bam).set{ch_scaffolds}
 
         GET_BEST_REFERENCE (
@@ -252,10 +267,10 @@ workflow RAD {
     }
 
     BOWTIE2_BUILD_NEW_REFERENCE (
-       MUGSY.out.new_ref
+    MUGSY.out.new_ref
     )
 
-    ch_trimmed_reads
+    ch_trimmed_reads_passed
         .join(BOWTIE2_BUILD_NEW_REFERENCE.out.index).set{ch_matched_reference}
 
     BOWTIE2_ALIGN_NEW_REFERENCE (
@@ -270,22 +285,10 @@ workflow RAD {
     )
 
     BOWTIE2_BUILD_FINAL_REFERENCE (
-       IVAR_CONSENSUS.out.consensus
+    IVAR_CONSENSUS.out.consensus
     )
 
-    IVAR_VARIANTS (
-        BOWTIE2_ALIGN_REFERENCE.out.bam,
-        GENBANK_TO_FASTA.out.fasta,
-        GENBANK_TO_FASTA.out.genes_gff
-    )
-
-    FORMAT_VARIANTS (
-        IVAR_VARIANTS.out.variants,
-        GENBANK_TO_FASTA.out.genes_gff,
-        params.edit_ivar_variants
-    )
-
-    ch_trimmed_reads
+    ch_trimmed_reads_passed
         .join(BOWTIE2_BUILD_FINAL_REFERENCE.out.index).set{ch_reads_mapped_final_consensus}
 
     BOWTIE2_ALIGN_FINAL_REFERENCE (
@@ -299,14 +302,47 @@ workflow RAD {
         .join(BBDUK_Q.out.log)
         .join(BOWTIE2_ALIGN_NEW_REFERENCE.out.bam)
         .join(IVAR_CONSENSUS.out.consensus)
-        .map { meta, rlog, qlog, bam, consensus -> [ meta, rlog, qlog, bam, consensus] }
-        .set {ch_summary}
+        .join(ch_trimmed_reads_passed)
+        .map { meta, rlog, qlog, bam, consensus, reads_mapped -> [ meta, rlog, qlog, bam, consensus, reads_mapped] }
+        .set {ch_summary_passed}
+
+    BBDUK_R.out.log
+        .join(BBDUK_Q.out.log)
+        .join(BOWTIE2_ALIGN_REFERENCE.out.bam)
+        .join(READS_MAPPED.out.empty)
+        .join(ch_trimmed_reads_failed)
+        .map { meta, rlog, qlog, bam, empty, reads_mapped -> [ meta, rlog, qlog, bam, empty, reads_mapped] }
+        .set {ch_summary_failed}
+
+    IVAR_VARIANTS (
+        BOWTIE2_ALIGN_REFERENCE.out.bam,
+        GENBANK_TO_FASTA.out.fasta,
+        GENBANK_TO_FASTA.out.genes_gff
+    )
+
+    FORMAT_VARIANTS (
+        IVAR_VARIANTS.out.variants,
+        GENBANK_TO_FASTA.out.genes_gff,
+        params.edit_ivar_variants
+    )
     
     SUMMARY (
-        ch_summary
+        ch_summary_passed
     )
-        
-    CLEANUP ( SUMMARY.out.summary_tsv.collect() )    
+
+    SUMMARY_FAILED (
+        ch_summary_failed
+    )    
+
+    CLEANUP ( 
+        SUMMARY.out.summary_tsv.collect(),
+        false
+    )    
+
+    CLEANUP_FAILED (
+        SUMMARY_FAILED.out.summary_tsv.collect(),
+        true
+    )
 
     // CUSTOM_DUMPSOFTWAREVERSIONS (
     //     ch_versions.unique().collectFile(name: 'collated_versions.yml')
