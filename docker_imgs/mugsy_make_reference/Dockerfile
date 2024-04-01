@@ -120,6 +120,6 @@ RUN pip3 install biopython
 RUN apt-get install -y git
 RUN apt-get install -y mummer=3.23+dfsg-3
 
-ADD scaffold_builder.py /scaffold_builder.py
+#ADD scaffold_builder.py /scaffold_builder.py
 
 ENV PATH=${PATH}:/usr/src/samtools-1.9:/usr/bin:/mugsy_x86-64-v1r2.2/MUMmer3.20

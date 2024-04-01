@@ -119,7 +119,7 @@ with open(hyper_complete_file_name, "w") as hyper_complete_outfile:
     SeqIO.write(hyper_hit_record, hyper_complete_outfile, 'fasta')
 
 # Extract UL_end from hyper_hit to use for IRL extraction in the case of UL substitution
-hyper_hit_ul_end = hyper_hit_regions["regions"]["UL"][1]
+hyper_hit_ul_end= hyper_hit_regions["regions"]["UL"][1]
 hyper_hit_ul_start = hyper_hit_regions["regions"]["UL"][0]
 hyper_hit_ul_end_file_name = hyper_hit_record.name + "_ul_end.fasta"
 hyper_hit_ul_start_file_name = hyper_hit_record.name + "_ul_start.fasta"

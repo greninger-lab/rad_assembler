@@ -93,9 +93,11 @@ def write_region(region_name, sequence):
         out.write(">" + region_name + "\n" + sequence)
 
 # Get the top bitscore for the UL region
-ul_hit_file = sys.argv[1] + ".ul.txt"
-ul_hit = top_hit(ul_hit_file)
-ul_hit_regions = regions_dict[ul_hit[:ul_hit.index(".")]]
+# ul_hit_file = sys.argv[1] + ".ul.txt"
+# ul_hit = top_hit(ul_hit_file)
+# ul_hit_regions = regions_dict[ul_hit[:ul_hit.index(".")]]
+ul_hit = std_ref_ref_name
+ul_hit_regions = regions_dict[ul_hit]
 ul_hit_record = get_genbank_record(ul_hit)
 ul_complete_file_name = ul_hit + "_complete.fasta"
 with open(ul_complete_file_name, "w") as ul_complete_outfile:
@@ -114,9 +116,10 @@ with open(ul_hit_ul_start_file_name, "w") as ul_ul_start_outfile:
     SeqIO.write(ul_hit_ul_start_record, ul_ul_start_outfile, 'fasta')
 
 # Get the top bitscore for the US region
-us_hit_file = sys.argv[1] + ".us.txt"
-us_hit = top_hit(us_hit_file)
-us_hit_regions = regions_dict[us_hit[:us_hit.index(".")]]
+# us_hit_file = sys.argv[1] + ".us.txt"
+# us_hit = top_hit(us_hit_file)
+us_hit = std_ref_ref_name
+us_hit_regions = regions_dict[us_hit]    
 us_hit_record = get_genbank_record(us_hit)
 us_complete_file_name = us_hit + "_complete.fasta"
 with open(us_complete_file_name, "w") as us_complete_outfile:
@@ -133,16 +136,16 @@ with open(us_hit_us_start_file_name, "w") as us_us_start_outfile:
     us_hit_us_start_record = us_hit_record[us_hit_us_start:us_hit_us_start+300]
     SeqIO.write(us_hit_us_start_record, us_us_start_outfile, 'fasta')
 
-irl_irs_hit_file = sys.argv[1] + ".irl_irs.txt"
-irl_irs_hit = top_hit(irl_irs_hit_file)
-# if there is no best hit for irl_irs region, use Merlin
-if not irl_irs_hit:
-    irl_irs_hit = std_ref_ref_name
-    irl_irs_hit_record = get_genbank_record(std_ref_ref_name)
-    irl_irs_hit_regions = regions_dict[std_ref_ref_name]
-else:
-    irl_irs_hit_regions = regions_dict[irl_irs_hit[:irl_irs_hit.index(".")]]
-    irl_irs_hit_record = get_genbank_record(irl_irs_hit)
+# irl_irs_hit_file = sys.argv[1] + ".irl_irs.txt"
+# irl_irs_hit = top_hit(irl_irs_hit_file)
+# # if there is no best hit for irl_irs region, use Merlin
+# if not irl_irs_hit:
+irl_irs_hit = std_ref_ref_name
+irl_irs_hit_record = get_genbank_record(std_ref_ref_name)
+irl_irs_hit_regions = regions_dict[std_ref_ref_name]
+# else:
+#     irl_irs_hit_regions = regions_dict[irl_irs_hit[:irl_irs_hit.index(".")]]
+#     irl_irs_hit_record = get_genbank_record(irl_irs_hit)
 irl_irs_start = irl_irs_hit_regions["regions"]["IRL_IRS"][0]
 irl_irs_end = irl_irs_hit_regions["regions"]["IRL_IRS"][1]
 irl_irs_only_record = str(irl_irs_hit_record.seq[irl_irs_start:irl_irs_end])
@@ -153,13 +156,13 @@ irl_irs_complete_file_name = irl_irs_hit + "_complete.fasta"
 with open(irl_irs_complete_file_name, "w") as irl_irs_complete_outfile:
     SeqIO.write(irl_irs_hit_record, irl_irs_complete_outfile, 'fasta')
 
-trl_hit_file = sys.argv[1] + ".trl.txt"
-trl_hit = top_hit(trl_hit_file)
-if not trl_hit:
-    trl_hit = irl_irs_hit
-    trl_hit_regions = irl_irs_hit_regions
-else:
-    trl_hit_regions = regions_dict[trl_hit[:trl_hit.index(".")]]
+# trl_hit_file = sys.argv[1] + ".trl.txt"
+# trl_hit = top_hit(trl_hit_file)
+# if not trl_hit:
+trl_hit = irl_irs_hit
+trl_hit_regions = irl_irs_hit_regions
+# else:
+#     trl_hit_regions = regions_dict[trl_hit[:trl_hit.index(".")]]
 trl_hit_record = get_genbank_record(trl_hit)
 trl_start = trl_hit_regions["regions"]["TRL"][0]
 trl_end = trl_hit_regions["regions"]["TRL"][1]
@@ -167,13 +170,13 @@ trl_only_record = str(trl_hit_record.seq[trl_start:trl_end])
 with open(meta_id + "_trl_hit.fasta", 'w') as trl_out:
     trl_out.write(">" + trl_hit_record.name + "\n" + trl_only_record)  
 
-trs_hit_file = sys.argv[1] + ".trs.txt"
-trs_hit = top_hit(trs_hit_file)
-if not trs_hit:
-    trs_hit = irl_irs_hit
-    trs_hit_regions = irl_irs_hit_regions
-else:    
-    trs_hit_regions = regions_dict[trs_hit[:trs_hit.index(".")]]
+# trs_hit_file = sys.argv[1] + ".trs.txt"
+# trs_hit = top_hit(trs_hit_file)
+# if not trs_hit:
+trs_hit = irl_irs_hit
+trs_hit_regions = irl_irs_hit_regions
+# else:    
+#     trs_hit_regions = regions_dict[trs_hit[:trs_hit.index(".")]]
 trs_hit_record = get_genbank_record(trs_hit)
 trs_start = trs_hit_regions["regions"]["TRS"][0]
 trs_end = trs_hit_regions["regions"]["TRS"][1]
@@ -181,13 +184,13 @@ trs_only_record = str(trs_hit_record.seq[trs_start:trs_end])
 with open(meta_id + "_trs_hit.fasta", 'w') as trs_out:
     trs_out.write(">" + trs_hit_record.name + "\n" + trs_only_record)  
 
-a_hit_file = sys.argv[1] + ".a.txt"
-a_hit = top_hit(a_hit_file)
-if not a_hit:
-    a_hit = irl_irs_hit
-    a_hit_regions = irl_irs_hit_regions
-else:    
-    a_hit_regions = regions_dict[a_hit[:a_hit.index(".")]]
+# a_hit_file = sys.argv[1] + ".a.txt"
+# a_hit = top_hit(a_hit_file)
+# if not a_hit:
+a_hit = irl_irs_hit
+a_hit_regions = irl_irs_hit_regions
+# else:    
+#     a_hit_regions = regions_dict[a_hit[:a_hit.index(".")]]
 a_hit_record = get_genbank_record(a_hit)
 a_start = a_hit_regions["regions"]["A"][0]
 a_end = a_hit_regions["regions"]["A"][1]
@@ -623,7 +626,7 @@ def join_contigs_by_irl_irs(fasta_file, start_sequence_name, overlap_end_ul_cont
     with open(start_name_fasta, "w") as start_outfile:
         SeqIO.write(sequences[start_sequence_name], start_outfile, 'fasta')
 
-    top_irl_irs_hit = find_top_combined_hit(trl_hit_file, trs_hit_file, irl_irs_hit_file)
+    top_irl_irs_hit = std_ref_ref_name  #find_top_combined_hit(trl_hit_file, trs_hit_file, irl_irs_hit_file)
     top_irl_irs_record = get_genbank_record(top_irl_irs_hit)
     if "." in top_irl_irs_hit:
         top_irl_irs_hit = top_irl_irs_hit[:top_irl_irs_hit.index(".")]
@@ -637,13 +640,30 @@ def join_contigs_by_irl_irs(fasta_file, start_sequence_name, overlap_end_ul_cont
         top_irl_irs_outfile.write(">" + top_irl_irs_hit + "_irl_irs\n" + irl_irs + "\n")
 
     irl_irs_scaffold_fasta = map_and_de_novo_assemble_region("irl_irs", top_irl_irs_fasta, True)
-    records = SeqIO.parse(irl_irs_scaffold_fasta, "fasta")
+    records = list(SeqIO.parse(irl_irs_scaffold_fasta, "fasta"))
 
-    num_records = sum(1 for record in records)
-    if num_records > 1:
-        logging.debug("De novo assembly of extracted irl_irs reads generated more than 1 contig. Scaffold_builder with best irl_irs hit reference.")
-        subprocess.run(["python2.7", "/scaffold_builder.py", "-q", irl_irs_scaffold_fasta, "-r", top_irl_irs_fasta, "-p", meta_id + "_isl_irs_final"])
-        subprocess.run(["mv", meta_id + "_isl_irs_final_Scaffold.fasta", meta_id + "_best_irl_irs.fasta"])
+    if len(records) > 1:
+        logging.debug("De novo assembly of extracted irl_irs reads generated more than 1 contig. Attempt extend contigs.")
+        ex_contigs = []
+        logging.debug("Extending contigs in irl_irs scaffold.")
+        for record in list(records):
+            ex_contig = extend_contig(record, ExtendDirection.BOTH, fastq_1, fastq_2, 0, True)
+            ex_contigs.append(ex_contig)
+
+        with open(meta_id + "_irl_irs_extended.fasta", "w") as new_scaffold_outfile:
+            SeqIO.write(ex_contigs, new_scaffold_outfile, 'fasta')
+        overlap_records = overlap_consensus(meta_id + "_irl_irs_extended.fasta", records[0].name)
+
+        if len(overlap_records) == 1:
+            with open(meta_id + "_best_irl_irs.fasta", "w") as overlap_outfile:
+                SeqIO.write(overlap_records, overlap_outfile, 'fasta')
+        else:
+            logging.debug("De novo assembly of extracted irl_irs reads generated more than 1 contig. Use best irl_irs hit reference.")
+            with open(meta_id + "_best_irl_irs.fasta", "w") as ref_irl_irs_out:
+                ref_irl_irs_out.write(">" + meta_id + "_best_irl_irs\n" + irl_irs + "\n")
+            
+            #subprocess.run(["python2.7", "/scaffold_builder.py", "-q", meta_id + "_irl_irs_ex_overlap.fasta", "-r", top_irl_irs_fasta, "-p", meta_id + "_isl_irs_final"])
+            #subprocess.run(["mv", meta_id + "_isl_irs_final_Scaffold.fasta", meta_id + "_best_irl_irs.fasta"])
     else:
         logging.debug("De novo assembly of extracted irl_irs reads generated 1 contig.")
         subprocess.run(["mv", irl_irs_scaffold_fasta, meta_id + "_best_irl_irs.fasta"])
@@ -669,8 +689,8 @@ def join_contigs_by_irl_irs(fasta_file, start_sequence_name, overlap_end_ul_cont
     if len(overlap_records) > 1:
         for record in overlap_records:
             # Extra contigs are probably host
-            if len(record.seq) > 228000:
-                logging.debug("Join contigs by irl_irs generated a multiple contigs with one contig > 228000.")
+            if len(record.seq) > 132000:
+                logging.debug("Join contigs by irl_irs generated a multiple contigs with one contig > 132000.")
                 return overlap_records
         # join contigs by using std_ref coordinates
         sequences = SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta"))
@@ -830,7 +850,18 @@ else:
     if not result:
         print("Failed to join all contigs. overlap_records size: " + str(len(overlap_records)))
         sys.exit(0)
-    
+
+with open(meta_id + "_initial_scaffold_temp.fasta", "w") as initial_scaffold_temp_out:
+    initial_scaffold_temp_out.write(">" + meta_id + "_temp_result\n" + result + "\n")
+
+temp_end_US_contig = get_contig_by_tag_fasta(meta_id + "_initial_scaffold_temp.fasta", std_ref_us_end_file_name, True)
+
+if temp_end_US_contig:
+    result = result[:temp_end_US_contig["start"]-300]
+else:
+    print("Expected to find US_end in result, but the tag not found.")
+    sys.exit(0)    
+
 
 consensus_record = SeqRecord(
     Seq(result),
@@ -894,6 +925,12 @@ logging.debug("Attempting to find 'a region' in consensus.")
 a_out = open(consensus_record.name + "_a.txt", "w")
 subprocess.run(["blastn", "-db", consensus_record.name + "_id", 
                 "-query", "/genome_identification/hsv1/hsv1_a_id.fasta", "-outfmt", "6"], stdout=a_out)
+
+
+with open(meta_id + "_beginning.fasta", "w") as beginning_outfile:
+    beginning_outfile.write(">" + meta_id + "_beginning\n" + str(beginning_seq))
+with open(meta_id + "_end.fasta", "w") as end_outfile:
+    end_outfile.write(">" + meta_id + "_end\n" + str(end_seq))
 try:
     df_ul_end = pd.read_csv(consensus_record.name + "_ul_end.txt",sep='\t',header=None)
     ul_end = df_ul_end.iloc[df_ul_end[11].idxmax()][9]
@@ -910,10 +947,6 @@ try:
     print("TRL length: " + str(len(trl)) + " UL_end: " + str(ul_end) + " a_end: " + str(scaffold_a_stop))
     print("TRS length: " + str(len(trs)))
 
-    with open(meta_id + "_beginning.fasta", "w") as beginning_outfile:
-        beginning_outfile.write(">" + meta_id + "_beginning\n" + str(beginning_seq))
-    with open(meta_id + "_end.fasta", "w") as end_outfile:
-        end_outfile.write(">" + meta_id + "_end\n" + str(end_seq))
     with open(meta_id + "_trl.fasta", "w") as trl_outfile:
         trl_outfile.write(">" + meta_id + "_trl\n" + trl)
     with open(meta_id + "_trs.fasta", "w") as trs_outfile:
@@ -921,64 +954,73 @@ try:
     begin_paf_file = run_minimap2(meta_id + "_beginning.fasta", meta_id + "_trl.fasta")
     end_paf_file = run_minimap2(meta_id + "_trs.fasta", meta_id + "_end.fasta")
 
-    if not begin_paf_file:
-        no_trl_complete = str(beginning_seq[len(beginning_seq)-601:]) + result
-        trl_search_out = open(meta_id + "_trl_best_hit.txt", "w")
-        subprocess.run(["blastn", "-db", "/genome_identification/hsv1/hsv1_trl_id", "-query", meta_id + "_trl.fasta", "-outfmt", "6"], stdout=trl_search_out)
-        try:
-            df = pd.read_csv(meta_id + "_trl_best_hit.txt" ,sep='\t', header=None)
-            subject = get_genbank_record(df.iloc[df[11].idxmax()][1])
-            subject_regions = regions_dict[subject.name]
-            with open(meta_id + "_best_trl_" + subject.name + ".fasta", "w") as best_trl_out:
-                SeqIO.write(subject, best_trl_out, 'fasta')
-            best_trl_start_UL_contig = get_contig_by_tag_fasta(meta_id + "_best_trl_" + subject.name + ".fasta", std_ref_ul_start_file_name, True)
-            best_trl = subject.seq[:best_trl_start_UL_contig["start"]]                
-            no_trs = str(best_trl) + no_trl_complete
-        except pd.errors.EmptyDataError:
-                logging.debug("Could not extract trl from best hit trl db.")
-                sys.exit()                 
-    else:
-        begin_overlap_info = parse_paf(begin_paf_file)
-        bqstart, bqend, btstart, btend = tuple(map(int, begin_overlap_info["coords"]))
-        new_begin = trl[:bqstart] + str(beginning_seq[btstart:])
-        no_trs = new_begin + result
-
-    if not end_paf_file:
-        no_trs_complete = no_trs + str(end_seq[:601])
-        trs_search_out = open(meta_id + "_trs_best_hit.txt", "w")
-        subprocess.run(["blastn", "-db", "/genome_identification/hsv1/hsv1_trs_id", "-query", meta_id + "_trs.fasta", "-outfmt", "6"], stdout=trs_search_out)
-        try:
-            df = pd.read_csv(meta_id + "_trs_best_hit.txt" ,sep='\t', header=None)
-            subject = get_genbank_record(df.iloc[df[11].idxmax()][1])
-            subject_regions = regions_dict[subject.name]
-            with open(meta_id + "_best_trs_" + subject.name + ".fasta", "w") as best_trs_out:
-                SeqIO.write(subject, best_trs_out, 'fasta')
-            best_trs_end_US_contig = get_contig_by_tag_fasta(meta_id + "_best_trs_" + subject.name + ".fasta", std_ref_us_end_file_name, True)
-            best_trs = subject.seq[best_trs_end_US_contig["end"]+1:]                
-            final_consensus = no_trs_complete + str(best_trs)
-        except pd.errors.EmptyDataError:
-                logging.debug("Could not extract trs from best hit trs db.")
-                sys.exit()                 
-    else:
-        end_overlap_info = parse_paf(end_paf_file)
-        eqstart, eqend, etstart, etend = tuple(map(int, end_overlap_info["coords"]))
-        new_end = str(end_seq[:etend]) + trs[eqend:]
-        final_consensus = result + new_end        
-
-
-    logging.debug("Attempting to write complete final reference length: " + str(len(final_consensus)))
-    final_consensus_record = SeqRecord(
-        Seq(final_consensus),
-        id=meta_id + "_final_consensus_scaffold",
-        name=meta_id + "_final_consensus_scaffold",
-        description="",
-    )    
-    with open(meta_id + "_final_scaffold.fasta", "w") as final_out:
-        SeqIO.write(final_consensus_record, final_out, 'fasta')
-        logging.debug("Final reference file generated.")
 except pd.errors.EmptyDataError:
         logging.debug("Could not extract irl_irs from consensus.")
-        sys.exit()
+        begin_paf_file = None
+        end_paf_file = None
+        # This will trigger a redendant search and should be refactored
+        with open(meta_id + "_trl.fasta", "w") as trl_outfile:
+            trl_outfile.write(">" + meta_id + "_trl\n" + trl_only_record)
+        with open(meta_id + "_trs.fasta", "w") as trs_outfile:
+            trs_outfile.write(">" + meta_id + "_trs\n" + trs_only_record)        
+        #sys.exit()
+
+if not begin_paf_file:
+    no_trl_complete = str(beginning_seq[len(beginning_seq)-601:]) + result
+    trl_search_out = open(meta_id + "_trl_best_hit.txt", "w")
+    subprocess.run(["blastn", "-db", "/genome_identification/hsv1/hsv1_trl_id", "-query", meta_id + "_trl.fasta", "-outfmt", "6"], stdout=trl_search_out)
+    try:
+        df = pd.read_csv(meta_id + "_trl_best_hit.txt" ,sep='\t', header=None)
+        subject = get_genbank_record(df.iloc[df[11].idxmax()][1])
+        subject_regions = regions_dict[subject.name]
+        with open(meta_id + "_best_trl_" + subject.name + ".fasta", "w") as best_trl_out:
+            SeqIO.write(subject, best_trl_out, 'fasta')
+        best_trl_start_UL_contig = get_contig_by_tag_fasta(meta_id + "_best_trl_" + subject.name + ".fasta", std_ref_ul_start_file_name, True)
+        best_trl = subject.seq[:best_trl_start_UL_contig["start"]]                
+        no_trs = str(best_trl) + no_trl_complete
+    except pd.errors.EmptyDataError:
+            logging.debug("Could not extract trl from best hit trl db.")
+            sys.exit()                 
+else:
+    begin_overlap_info = parse_paf(begin_paf_file)
+    bqstart, bqend, btstart, btend = tuple(map(int, begin_overlap_info["coords"]))
+    new_begin = trl[:bqstart] + str(beginning_seq[btstart:])
+    no_trs = new_begin + result
+
+if not end_paf_file:
+    no_trs_complete = no_trs + str(end_seq[:601])
+    trs_search_out = open(meta_id + "_trs_best_hit.txt", "w")
+    subprocess.run(["blastn", "-db", "/genome_identification/hsv1/hsv1_trs_id", "-query", meta_id + "_trs.fasta", "-outfmt", "6"], stdout=trs_search_out)
+    try:
+        df = pd.read_csv(meta_id + "_trs_best_hit.txt" ,sep='\t', header=None)
+        subject = get_genbank_record(df.iloc[df[11].idxmax()][1])
+        subject_regions = regions_dict[subject.name]
+        with open(meta_id + "_best_trs_" + subject.name + ".fasta", "w") as best_trs_out:
+            SeqIO.write(subject, best_trs_out, 'fasta')
+        best_trs_end_US_contig = get_contig_by_tag_fasta(meta_id + "_best_trs_" + subject.name + ".fasta", std_ref_us_end_file_name, True)
+        best_trs = subject.seq[best_trs_end_US_contig["end"]+1:]                
+        final_consensus = no_trs_complete + str(best_trs)
+    except pd.errors.EmptyDataError:
+            logging.debug("Could not extract trs from best hit trs db.")
+            sys.exit()                 
+else:
+    end_overlap_info = parse_paf(end_paf_file)
+    eqstart, eqend, etstart, etend = tuple(map(int, end_overlap_info["coords"]))
+    new_end = str(end_seq[:eqend]) + trs[etend:]
+    final_consensus = no_trs + new_end        
+
+
+logging.debug("Attempting to write complete final reference length: " + str(len(final_consensus)))
+final_consensus_record = SeqRecord(
+    Seq(final_consensus),
+    id=meta_id + "_final_consensus_scaffold",
+    name=meta_id + "_final_consensus_scaffold",
+    description="",
+)    
+with open(meta_id + "_final_scaffold.fasta", "w") as final_out:
+    SeqIO.write(final_consensus_record, final_out, 'fasta')
+    logging.debug("Final reference file generated.")
+
 
 scaffolds_file_fasta = meta_id + "_final_scaffold.fasta"
 

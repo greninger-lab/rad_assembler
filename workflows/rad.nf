@@ -41,6 +41,7 @@ include { MAKE_REFERENCE } from '../modules/local/make_reference'
 include { GENERATE_CONSENSUS } from '../modules/local/generate_consensus'
 include { GENBANK_TO_FASTA } from '../modules/local/genbank_to_fasta'
 include { SRA_SCRUB_HUMAN } from '../modules/local/sra_scrub_human.nf'
+include { BBMAP_DEDUPE } from '../modules/local/bbmap_dedupe.nf'
 include { READS_MAPPED } from '../modules/local/reads_mapped.nf'
 include { BWA_MEM_ALIGN as BWA_MEM_ALIGN_NEW_REF } from '../modules/local/bwa_mem_align'
 include { GET_BEST_REFERENCE } from '../modules/local/get_best_reference'
@@ -184,20 +185,24 @@ workflow RAD {
 	)
 
     FASTQC_TRIMMED (
-       ch_trimmed_reads
+        ch_trimmed_reads
+    )
+
+    BBMAP_DEDUPE (
+        ch_trimmed_reads
     )
 
     READS_MAPPED (
-        BOWTIE2_ALIGN_REFERENCE.out.bam
+        BOWTIE2_ALIGN_REFERENCE.out.bam        
     )
 
     READS_MAPPED.out.reads_mapped.branch {
-        passed: it[1].toInteger() > 150000
-        failed: it[1].toInteger() <= 150000
+        passed: it[1].toInteger() > 50000
+        failed: it[1].toInteger() <= 50000
     }.set{ ch_reads_mapped }
 
-    ch_trimmed_reads.join(ch_reads_mapped.passed).map{ [it[0], it[1]] }.set{ ch_trimmed_reads_passed }
-    ch_trimmed_reads.join(ch_reads_mapped.failed).map{ [it[0], it[1]] }.set{ ch_trimmed_reads_failed }
+    BBMAP_DEDUPE.out.reads.join(ch_reads_mapped.passed).map{ [it[0], it[1]] }.set{ ch_trimmed_reads_passed }
+    BBMAP_DEDUPE.out.reads.join(ch_reads_mapped.failed).map{ [it[0], it[1]] }.set{ ch_trimmed_reads_failed }
 
     ch_scaffolds = Channel.empty()
 
@@ -267,7 +272,7 @@ workflow RAD {
     }
 
     BOWTIE2_BUILD_NEW_REFERENCE (
-    MUGSY.out.new_ref
+        MUGSY.out.new_ref
     )
 
     ch_trimmed_reads_passed

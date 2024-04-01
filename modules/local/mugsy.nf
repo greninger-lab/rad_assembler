@@ -52,15 +52,21 @@ process MUGSY {
             ref_name=\${ref%.fasta*}
             mugsy --directory ./ --prefix ${prefix}_aligned_scaffolds_\${ref_name/./_} \$ref ${scaffolds}
             sed '/^a score=0/,\$d' ${prefix}_aligned_scaffolds_\${ref_name/./_}.maf > ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.maf
-            /usr/bin/python2.7 ${maf_convert} -d sam ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.maf > ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.sam
-            samtools view -bS -T \$ref ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.sam | samtools sort > ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.bam
-            Rscript --vanilla make_reference.R ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.bam \$ref 20
+            minimumsize=500
+            actualsize=\$(wc -c < "${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.maf")
+            if [ \$actualsize -ge \$minimumsize ]; then
+                /usr/bin/python2.7 ${maf_convert} -d sam ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.maf > ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.sam
+                samtools view -bS -T \$ref ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.sam | samtools sort > ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.bam
+                Rscript --vanilla make_reference.R ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}.bam \$ref 20
+            else
+                cp \$ref ${meta.id}_aligned_scaffolds_nonzero_\${ref_name}_consensus.fasta
+            fi
         done
 
         #cat *nonzero_region*consensus.fasta *nonzero_region*consensus.fasta > ${meta.id}_query.fasta
         #mv ${meta.id}_sb_Scaffold.fasta ${meta.id}_sb_new_ref_consensus.fasta
 
-        python3 configure_reference.py -r ${region_map} --build_reference -s ${meta.id}_aligned_scaffolds_nonzero_region ${genbank_ref}
+        /usr/bin/python3.6 configure_reference.py -r ${region_map} --build_reference -s ${meta.id}_aligned_scaffolds_nonzero_region ${genbank_ref}
 
         # mv ${meta.id}_aligned_scaffolds_nonzero_region_new_ref_consensus.fasta ${meta.id}_new_ref.fasta
         # mugsy --directory ./ --prefix ${prefix}_aligned_scaffolds_concat ${meta.id}_new_ref.fasta ${scaffolds}
