@@ -26,10 +26,10 @@ if ".gz" in fastq_2:
     subprocess.run(["gunzip", "-f", fastq_2])
     fastq_2 = fastq_2[:fastq_2.index(".gz")]
 
-# Curated list of HSV1 genomes and the regions extracted from their published 
+# Curated list of HSV2 genomes and the regions extracted from their published 
 # annotation.  Region info may or may not be trustworthy. 
-gb_genomes = "/genome_identification/hsv1/hsv1_genomes.gb"
-gb_genomes_regions = "/genome_identification/hsv1/hsv1_genomes_regions.json"
+gb_genomes = "/genome_identification/hsv2/hsv2_genomes.gb"
+gb_genomes_regions = "/genome_identification/hsv2/hsv2_genomes_regions.json"
 
 logging.basicConfig(filename=meta_id + '_build_reference.log', level=logging.DEBUG, filemode = 'w')
 
@@ -45,7 +45,7 @@ def get_genbank_record(name):
 
 # Gather information from a standard reference to use as a
 # defining, consistent coordinate system for large regions.
-std_ref_ref_name = "NC_001806"
+std_ref_ref_name = "NC_001798"
 
 std_ref_record = get_genbank_record(std_ref_ref_name)
 std_ref_regions = regions_dict[std_ref_ref_name]
@@ -882,7 +882,7 @@ subprocess.run(["blastn", "-db", consensus_record.name + "_id", "-query", std_re
 logging.debug("Attempting to find 'a region' in consensus.")
 a_out = open(consensus_record.name + "_a.txt", "w")
 subprocess.run(["blastn", "-db", consensus_record.name + "_id", 
-                "-query", "/genome_identification/hsv1/hsv1_a_id.fasta", "-outfmt", "6"], stdout=a_out)
+                "-query", "/genome_identification/hsv2/hsv2_a_id.fasta", "-outfmt", "6"], stdout=a_out)
 
 
 with open(meta_id + "_beginning.fasta", "w") as beginning_outfile:
@@ -926,7 +926,7 @@ except pd.errors.EmptyDataError:
 if not begin_paf_file:
     no_trl_complete = str(beginning_seq[len(beginning_seq)-601:]) + result
     trl_search_out = open(meta_id + "_trl_best_hit.txt", "w")
-    subprocess.run(["blastn", "-db", "/genome_identification/hsv1/hsv1_trl_id", "-query", meta_id + "_trl.fasta", "-outfmt", "6"], stdout=trl_search_out)
+    subprocess.run(["blastn", "-db", "/genome_identification/hsv2/hsv2_trl_id", "-query", meta_id + "_trl.fasta", "-outfmt", "6"], stdout=trl_search_out)
     try:
         df = pd.read_csv(meta_id + "_trl_best_hit.txt" ,sep='\t', header=None)
         subject = get_genbank_record(df.iloc[df[11].idxmax()][1])
@@ -948,7 +948,7 @@ else:
 if not end_paf_file:
     no_trs_complete = no_trs + str(end_seq[:601])
     trs_search_out = open(meta_id + "_trs_best_hit.txt", "w")
-    subprocess.run(["blastn", "-db", "/genome_identification/hsv1/hsv1_trs_id", "-query", meta_id + "_trs.fasta", "-outfmt", "6"], stdout=trs_search_out)
+    subprocess.run(["blastn", "-db", "/genome_identification/hsv2/hsv2_trs_id", "-query", meta_id + "_trs.fasta", "-outfmt", "6"], stdout=trs_search_out)
     try:
         df = pd.read_csv(meta_id + "_trs_best_hit.txt" ,sep='\t', header=None)
         subject = get_genbank_record(df.iloc[df[11].idxmax()][1])
@@ -1019,7 +1019,7 @@ try:
     write_region(region_name, final_trs)
 
     # this will only be used for the region_order (it doesn't matter what coordinates are)
-    with open("HSV1-" + meta_id + ".json", 'w') as jsonfile:
+    with open("HSV2-" + meta_id + ".json", 'w') as jsonfile:
         jsonfile.write(json.dumps(ul_hit_regions))
 
     with open(meta_id + ".gb", "w") as gb_file:
