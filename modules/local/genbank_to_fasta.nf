@@ -2,9 +2,7 @@ process GENBANK_TO_FASTA {
 
     label "process_single"
 
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/':
-        'docker.io/jefffurlong/biopython_biocode' }"
+    container "quay.io/jefffurlong/biopython_biocode"
 
     input:
     path(genbank_file)

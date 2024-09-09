@@ -3,9 +3,7 @@ process FORMAT_VARIANTS {
 
     label "process_single"
 
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/':
-        'docker.io/jefffurlong/biopython_biocode' }"
+    container "quay.io/jefffurlong/biopython_biocode"
 
     input:
     tuple val(meta), path(ivar_variants)

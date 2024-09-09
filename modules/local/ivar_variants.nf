@@ -2,7 +2,7 @@ process IVAR_VARIANTS {
     tag "$meta.id"
     label 'process_high'
 
-    container "docker.io/sereewit/ivar:1.4.2_49079e2"
+    container "quay.io/sereewit/ivar:1.4.2_49079e2"
 
 
     input:

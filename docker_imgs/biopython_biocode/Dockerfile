@@ -1,5 +1,5 @@
 # base image
-FROM python:bullseye
+FROM quay.io/fedora/python-312:312
 
 # install biocode
 RUN pip3 install biopython==1.81

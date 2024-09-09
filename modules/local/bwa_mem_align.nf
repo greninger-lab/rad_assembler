@@ -2,7 +2,7 @@ process BWA_MEM_ALIGN {
     tag "$meta.id"
     label 'process_high'
 
-    container "docker.io/dukegcb/bwa-samtools"
+    container "quay.io/hdc-workflows/bwa-samtools:4f00123"
 
 
     input: 

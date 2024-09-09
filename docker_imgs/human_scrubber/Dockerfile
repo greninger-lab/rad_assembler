@@ -1,15 +1,15 @@
-FROM ncbi/sra-human-scrubber:latest
+FROM quay.io/biocontainers/sra-human-scrubber:2.2.1--hdfd78af_0
 
-RUN apt-get update
-RUN apt-get install -y procps
-RUN apt-get install -y wget
+# RUN apt-get update
+# RUN apt-get install -y procps
+# RUN apt-get install -y wget
 
-# Install base utilities
-RUN apt-get update \
-    && apt-get install -y build-essential \
-    && apt-get install -y wget \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# # Install base utilities
+# RUN apt-get update \
+#     && apt-get install -y build-essential \
+#     && apt-get install -y wget \
+#     && apt-get clean \
+#     && rm -rf /var/lib/apt/lists/*
 
 # Install miniconda
 ENV CONDA_DIR /opt/conda
