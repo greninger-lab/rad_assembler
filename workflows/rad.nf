@@ -91,6 +91,10 @@ include { BBMAP_BBDUK as BBDUK_Q } from '../modules/nf-core/bbmap/bbduk/main'
 include { FASTQC as FASTQC_RAW } from '../modules/nf-core/fastqc/main'
 include { FASTQC as FASTQC_TRIMMED } from '../modules/nf-core/fastqc/main'
 include { SEQTK_SAMPLE } from '../modules/nf-core/seqtk/sample/main'
+include { PICARD_ADDORREPLACEREADGROUPS } from '../modules/local/addorreplacereadgroups'
+include { GATK_REALIGNERTARGETCREATOR   } from '../modules/local/realignertargetcreator'
+include { GATK_INDELREALIGNER           } from '../modules/local/indelrealigner'
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -179,6 +183,28 @@ workflow RAD {
 		params.sort_bowtie2_bam
 	)
 
+    PICARD_ADDORREPLACEREADGROUPS (
+        BOWTIE2_ALIGN_REFERENCE.out.bam,
+        [[],[]],
+        [[],[]]
+    )
+
+    GATK_REALIGNERTARGETCREATOR (
+        PICARD_ADDORREPLACEREADGROUPS.out.bam,
+        PICARD_ADDORREPLACEREADGROUPS.out.bam.map{ [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta),
+        PICARD_ADDORREPLACEREADGROUPS.out.bam.map{ [it[0]] }.combine(GENBANK_TO_FASTA.out.fai),
+        PICARD_ADDORREPLACEREADGROUPS.out.bam.map{ [it[0]] }.combine(GENBANK_TO_FASTA.out.dict),
+        [[],[]]
+    )
+
+    GATK_INDELREALIGNER (
+        PICARD_ADDORREPLACEREADGROUPS.out.bam.join(GATK_REALIGNERTARGETCREATOR.out.intervals),
+        PICARD_ADDORREPLACEREADGROUPS.out.bam.map{ [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta),
+        PICARD_ADDORREPLACEREADGROUPS.out.bam.map{ [it[0]] }.combine(GENBANK_TO_FASTA.out.fai),
+        PICARD_ADDORREPLACEREADGROUPS.out.bam.map{ [it[0]] }.combine(GENBANK_TO_FASTA.out.dict),
+        [[],[]]
+    )
+
     FASTQC_TRIMMED (
        ch_trimmed_reads
     )
@@ -241,13 +267,14 @@ workflow RAD {
     )
 
     IVAR_VARIANTS (
-        BOWTIE2_ALIGN_REFERENCE.out.bam,
+        GATK_INDELREALIGNER.out.bam.map{ [it[0], it[1]] },
         GENBANK_TO_FASTA.out.fasta,
         GENBANK_TO_FASTA.out.genes_gff
     )
 
     FORMAT_VARIANTS (
         IVAR_VARIANTS.out.variants,
+        GENBANK_TO_FASTA.out.fasta,
         GENBANK_TO_FASTA.out.genes_gff,
         params.edit_ivar_variants
     )
