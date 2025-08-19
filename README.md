@@ -2,54 +2,33 @@
 Nextflow pipeline for reference assisted de novo assembling whole genome shotgun sequenced viruses.
 
 ## Usage
-Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) (`>=21.10.3`)
+Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
 
 Install [`Docker`](https://docs.docker.com/engine/installation/)
 
 
-### Command line:
-    nextflow run greninger-lab/rad_assembler \
-        --input PATH_TO_SAMPLE_CSV \                      # required
-        --outdir PATH_TO_OUTPUT_FOLDER \                  # required
-        --bowtie2_host_index PATH_TO_HOST_BOWTIE2_INDEX \ # optional (path to bowtie2 index of host to use for filtering host DNA)
-        --region_map PATH_TO_REGION_MAP_FILE \            # optional (path to region map json file)
-        --genbank_ref ../NC_XXXXXXXX.gb \                 # required (genbank reference)
-        --spades_flag \                                   # optional (default is meta, alternatives are careful or unicycler)
-        -profile docker \                                 # required
-        -with-tower \                                     # optional (use if you want to use Nextflow Tower)
-        -c nextflow_aws.config \                          # optional (AWS account config info) 
-        -r main                                           # required (use the github main branch)
+### Example command line usage:
+    nextflow run greninger-lab/rad_assembler -r find_reference -latest \
+              --input sample_fastqs.csv \
+              --outdir ./out/ \
+              --genbank_ref NC_001798.gb \
+              --find_reference hsv2 \
+              --spades_flag unicycler \
+              --kraken_host_db s3://fh-pi-jerome-k-eco/greninger-lab/greninger-lab-file-share/refs/Kraken2_human/k2_human/ \
+              -profile docker \
+              -c ~/nextflow_aws.config \
 
-
-#### Region map files:
-An optional region map in json format for splitting the reference into sections so that a new reference for read mapping can be built more accurately.  This can be very helpful when there are large inverted repeat regions in the genome. 
-
-Example region map file
------------------------
-    {
-        "regions": {
-            "TRL" : [0,9212],
-            "UL" : [9213,117159],
-            "IRL_IRS" : [117160,132604],
-            "US" : [132605,145588],
-            "TRS" : [145589,152221]
-        },
-        "region_order": [
-            {"region": "TRL", "reverse": false}, 
-            {"region": "UL", "reverse": false}, 
-            {"region": "IRL_IRS", "reverse": false}, 
-            {"region": "US", "reverse": false},
-            {"region": "TRS", "reverse": false}
-        ]
-    }
------------------------
-
-"regions" defines a region name and the reference coordinates for extracting the region.  De novo assembled scaffolds are mapped to the region and then a new reference is generated for the region. 
-"region_order" sets the order for concatenating the new region references together to make a complete genome reference.  "reverse" will reverse the region reference before concatenating if set to true.
-
-#### Example region map files:
-    rad_assembler/region_maps/HSV1-NC001806.json
-    rad_assembler/region_maps/HSV2-NC001798.json
+## Command line options
+| option | description | 
+|--------|-------------|
+| `--input  /path/to/sample_fastqs.csv` | (required) path to a csv sample,fastq_1,fastq_2 input file |
+| `--outdir /path/to/output`                | (required) output directory |
+| `--kraken_host_db /path/to/kraken2_human_db`  | (required) path to Kraken2 human database |
+| `--genbank_ref <file>`        | (required) path to a GenBank (.gb) format reference file| 
+| `--spades_flag <key>`        | (optional) default key is "meta", alternatives are "careful" or "unicycler" |
+| `--find_reference <key>`     | (optional but recommended for supported species) available keys are "hsv1", "hsv2" or "cmv") |
+| `-profile docker`                         | (required) |
+| `-c /path/to/your/custom.config`          | (optional) used specify a custom configuration file (see [Nextflow docs](https://www.nextflow.io/docs/latest/config.html) |
 
 
 #### Sample csv example:
