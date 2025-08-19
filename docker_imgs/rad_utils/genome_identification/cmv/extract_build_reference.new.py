@@ -1126,48 +1126,6 @@ if len(joined_records) == 1:
 else:
     print("Exiting joined_records size: " + str(len(joined_records)))
 
-#     logging.debug("Mapping to initial_scaffold.fasta")
-#     subprocess.run(["mkdir", meta_id + "_bowtie2"])
-#     subprocess.run(["bowtie2-build", meta_id + "_initial_scaffold.fasta", meta_id + "_bowtie2/" + meta_id])
-#     sp_sam = subprocess.run(["bowtie2", "-x", meta_id + "_bowtie2/" + meta_id, "-1", fastq_1, "-2", fastq_2, "--threads", cpus, "--no-unal", "--local", "--very-sensitive-local", "--seed", "1"], stdout=subprocess.PIPE)
-#     sp_sorted_bam = subprocess.run(["samtools", "sort", "-@", cpus, "-o", meta_id + "_initial_mapped_sorted.bam"], input=sp_sam.stdout)
-#     sp_mpileup = subprocess.run(["samtools", "mpileup", "-d", "5000", "-A", "-Q", "0", meta_id + "_initial_mapped_sorted.bam"], stdout=subprocess.PIPE)
-#     subprocess.run(["ivar", "consensus", "-p", meta_id + "_initial_consensus", "-n", "'N'", "-m", "5", "-t", "0.75"], input=sp_mpileup.stdout)
-#     logging.debug("Consensus created from mapping to initial_scaffold.fasta.")
-    
-#     if os.path.isfile(meta_id + "_initial_consensus.fa") == True:
-#         initial_consensus_record = next(SeqIO.parse(meta_id + "_initial_consensus.fa","fasta"))
-#         initial_consensus_str = str(initial_consensus_record.seq)
-#         # Check for Ns in initial consensus.  If there, run GapFiller        
-#         if "N" in initial_consensus_str:
-#             logging.debug("Found Ns in initial_scaffold mapping. Using picard CollectInsertSizeMetrics to prepare for GapFiller.")
-#             subprocess.run(["picard", "CollectInsertSizeMetrics", "I=" + meta_id + "_initial_mapped_sorted.bam", "O=" + meta_id 
-#                             + "_insert_metrics.txt", "H=" + meta_id + "_insert_histogram.pdf", "M=0.5"])
-#             with open(meta_id + "_insert_metrics.txt", 'r') as file:
-#                 lines = file.readlines()
-#                 if len(lines) >= 8:
-#                     metrics = lines[7].strip().split("\t")
-#                     insert_size = str(round(float(metrics[5]), 2))
-#                     std_dev = str(round(float(metrics[6])/float(metrics[5]), 2))
-#                     print("CollectInsertSizeMetrics insert_size: " + insert_size + " std_dev: " + std_dev)
-#                     with open("gflib.txt","w") as gf_lib_out:
-#                         gf_lib_out.write("lib1 bwa " + fastq_1 + " " + fastq_2 + " " + insert_size + " " + std_dev + " FR")
-#                     logging.debug("GapFiller with gflib.txt: lib1 bwa " + fastq_1 + " " + fastq_2 + " " + insert_size + " " + std_dev + " FR")
-#                     subprocess.run(["perl", "/genome_identification/cmv/GapFiller", "-q", "./", "-l", "gflib.txt", "-s", meta_id + "_initial_consensus.fa"])
-#                     new_consensus_record = next(SeqIO.parse("./standard_output/standard_output.gapfilled.final.fa","fasta"))
-#                     new_consensus_str = str(new_consensus_record.seq)
-#                     logging.debug("Writing to initial_scaffold_consensus fasta.")
-#                     with open(meta_id + "_initial_mapped_consensus.fasta", "w") as new_consensus_out:
-#                         new_consensus_out.write(">" + meta_id + "_initial_mapped_consensus\n" + new_consensus_str + "\n")
-#                     #subprocess.run(["cp", "./standard_output/standard_output.gapfilled.final.fa", meta_id + "_initial_mapped_consensus.fasta"])
-#         else:
-#             logging.debug("No Ns in initial_scaffold mapping. Writing to initial_scaffold_consensus.fasta.")
-#             with open(meta_id + "_initial_mapped_consensus.fasta", "w") as new_consensus_out:
-#                 new_consensus_out.write(">" + meta_id + "_initial_mapped_consensus\n" + initial_consensus_str + "\n")            
-#         mapped_consensus_record = next(SeqIO.parse(meta_id + "_initial_mapped_consensus.fasta", "fasta"))
-
-# mapped_consensus_str = str(mapped_consensus_record.seq)
-
 logging.debug("Attempting to find UL_end and US_start in initial_scaffold_consensus.fasta.")
 subprocess.run(["makeblastdb", "-in", meta_id + "_initial_scaffold.fasta", "-out", consensus_record.name + "_id", "-parse_seqids", "-dbtype", "nucl"])            
 ul_end_out = open(consensus_record.name + "_ul_end.txt", "w")

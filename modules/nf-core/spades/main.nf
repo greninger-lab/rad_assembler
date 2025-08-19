@@ -7,7 +7,7 @@ process SPADES {
         'biocontainers/spades:3.15.5--h95f258a_1' }"
 
     input:
-    tuple val(meta), path(illumina) //, path(pacbio), path(nanopore)
+    tuple val(meta), path(illumina), path(pacbio) //, path(nanopore)
     val(spades_flag)
     //path yml
     //path hmm
@@ -29,7 +29,7 @@ process SPADES {
     def prefix = task.ext.prefix ?: "${meta.id}"
     def maxmem = task.memory.toGiga()
     def illumina_reads = illumina ? ( meta.single_end ? "-s $illumina" : "-1 ${illumina[0]} -2 ${illumina[1]}" ) : ""
-    //def pacbio_reads = pacbio ? "--pacbio $pacbio" : ""
+    def pacbio_reads = pacbio ? "--pacbio $pacbio" : ""
     //def nanopore_reads = nanopore ? "--nanopore $nanopore" : ""
     //def custom_hmms = hmm ? "--custom-hmms $hmm" : ""
     //def reads = yml ? "--dataset $yml" : "$illumina_reads $pacbio_reads $nanopore_reads"

@@ -2,9 +2,7 @@ process MUGSY {
     tag "$meta.id"
     label "process_high"
 
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/':
-        'docker.io/jefffurlong/mugsy_make_reference' }"
+    container "quay.io/jefffurlong/mugsy_make_reference"
 
     input:
     tuple val(meta), path(scaffolds)

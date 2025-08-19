@@ -1,14 +1,13 @@
 
 process FORMAT_VARIANTS {
-
+    tag "$meta.id"
     label "process_single"
 
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/':
-        'docker.io/jefffurlong/biopython_biocode' }"
+    container "quay.io/jefffurlong/ref-utils"
 
     input:
     tuple val(meta), path(ivar_variants)
+    path(ref)
     path(gff)
     path(edit_ivar_variants)
 
@@ -20,7 +19,7 @@ process FORMAT_VARIANTS {
     task.ext.when == null || task.ext.when
 
     """
-    python3 ${edit_ivar_variants} ${ivar_variants} ${gff} ${meta.id}.formatted_variants
+    python3 ${edit_ivar_variants} ${ivar_variants} ${gff} ${ref} ${meta.id}.formatted_variants
  
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -3,7 +3,7 @@ process SAMPLESHEET_CHECK {
     label 'process_single'
 
 
-    container "${ 'docker.io/python:3.9.18-bullseye' }"
+    container "quay.io/fedora/python-312:312"
 
     input:
     path samplesheet

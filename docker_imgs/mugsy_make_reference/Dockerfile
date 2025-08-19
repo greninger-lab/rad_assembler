@@ -1,5 +1,5 @@
 # base image
-FROM ubuntu:bionic
+FROM quay.io/bedrock/ubuntu:bionic-20230530
 
 # install ubuntu dependencies
 RUN apt-get update && apt-get install -y wget \

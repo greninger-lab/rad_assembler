@@ -4,7 +4,7 @@ process SRA_SCRUB_HUMAN {
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/':
-        'docker.io/jefffurlong/human_scrubber:latest' }"
+        'quay.io/jefffurlong/human_scrubber' }"
 
     input:
     tuple val(meta), path(reads)

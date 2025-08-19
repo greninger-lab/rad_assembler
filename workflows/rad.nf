@@ -17,6 +17,7 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
 if (params.genbank_ref) { ch_genbank_ref = file(params.genbank_ref) } else { exit 1, 'Genbank reference file not specified!' }
+if (!params.kraken_host_db) { exit 1, "Kraken host database not specified with e.g. '--kraken_host_db s3://fh-pi-jerome-k-eco/greninger-lab/greninger-lab-file-share/refs/Kraken2_human/k2_human/' or via a detectable config file." }
 if (params.bowtie2_host_index) { ch_bowtie2_host_index = Channel.fromPath(params.bowtie2_host_index)} else { ch_bowtie2_host_index = [] }
 if (params.region_map) { ch_region_map = file(params.region_map) } else { ch_region_map = [] }
 
@@ -37,18 +38,21 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 include { MUGSY } from '../modules/local/mugsy'
-include { MAKE_REFERENCE } from '../modules/local/make_reference'
-include { GENERATE_CONSENSUS } from '../modules/local/generate_consensus'
+include { BBMAP_REPAIR } from '../modules/local/bbmap_repair'
 include { GENBANK_TO_FASTA } from '../modules/local/genbank_to_fasta'
-include { SRA_SCRUB_HUMAN } from '../modules/local/sra_scrub_human.nf'
+include { FASTA_INDEX } from '../modules/local/fasta_index'
 include { BBMAP_DEDUPE } from '../modules/local/bbmap_dedupe.nf'
 include { READS_MAPPED } from '../modules/local/reads_mapped.nf'
-include { BWA_MEM_ALIGN as BWA_MEM_ALIGN_NEW_REF } from '../modules/local/bwa_mem_align'
+include { PICARD_ADDORREPLACEREADGROUPS } from '../modules/local/addorreplacereadgroups'
+include { GATK_REALIGNERTARGETCREATOR   } from '../modules/local/realignertargetcreator'
+include { GATK_INDELREALIGNER           } from '../modules/local/indelrealigner'
+include { PICARD_ADDORREPLACEREADGROUPS as PICARD_ADDORREPLACEREADGROUPS_NEW_REF } from '../modules/local/addorreplacereadgroups'
+include { GATK_REALIGNERTARGETCREATOR as GATK_REALIGNERTARGETCREATOR_NEW_REF   } from '../modules/local/realignertargetcreator'
+include { GATK_INDELREALIGNER as GATK_INDELREALIGNER_NEW_REF           } from '../modules/local/indelrealigner'
 include { GET_BEST_REFERENCE } from '../modules/local/get_best_reference'
 include { IVAR_CONSENSUS } from '../modules/local/ivar_consensus'
 include { IVAR_VARIANTS } from '../modules/local/ivar_variants'
 include { FORMAT_VARIANTS } from '../modules/local/format_variants'
-include { BWA_MEM_ALIGN as BWA_MEM_ALIGN_FINAL_CONSENSUS } from '../modules/local/bwa_mem_align'
 include { SUMMARY } from '../modules/local/summary'
 include { SUMMARY as SUMMARY_FAILED } from '../modules/local/summary'
 include { CLEANUP } from '../modules/local/cleanup'
@@ -59,7 +63,6 @@ include { CLEANUP as CLEANUP_FAILED } from '../modules/local/cleanup'
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 include { INPUT_CHECK } from '../subworkflows/local/input_check'
-//include { FASTQ_TRIM_FASTP_FASTQC     } from '../subworkflows/nf-core/fastq_trim_fastp_fastqc/main'
 include { FASTQ_ALIGN_BOWTIE2		  } from '../subworkflows/nf-core/fastq_align_bowtie2/main'
 include { FASTQ_ALIGN_BOWTIE2 as FASTQ_ALIGN_BOWTIE2_NEW_REF } from '../subworkflows/nf-core/fastq_align_bowtie2/main'
 /*
@@ -71,31 +74,23 @@ include { FASTQ_ALIGN_BOWTIE2 as FASTQ_ALIGN_BOWTIE2_NEW_REF } from '../subworkf
 //
 // MODULE: Installed directly from nf-core/modules
 //
-// include { FASTQC                      } from '../modules/nf-core/fastqc/main'
-// include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
-
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { SPADES } from '../modules/nf-core/spades/main'
 include { UNICYCLER } from '../modules/nf-core/unicycler/main'
 include { GUNZIP } from '../modules/nf-core/gunzip/main'
-include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_ALIGNED } from '../modules/nf-core/samtools/view/main'
-include { SAMTOOLS_SORT as SAMTOOLS_SORT_ALIGNED } from '../modules/nf-core/samtools/sort/main'
-include { LAST_MAFCONVERT } from '../modules/nf-core/last/mafconvert/main'
-include { GUNZIP as GUNZIP_MAF_TO_SAM } from '../modules/nf-core/gunzip/main'
 include { BOWTIE2_BUILD as BOWTIE2_BUILD_NEW_REFERENCE } from '../modules/nf-core/bowtie2/build/main'
 include { BOWTIE2_BUILD as BOWTIE2_BUILD_REFERENCE } from '../modules/nf-core/bowtie2/build/main'
 include { BOWTIE2_BUILD as BOWTIE2_BUILD_FINAL_REFERENCE } from '../modules/nf-core/bowtie2/build/main'
 include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_REFERENCE } from '../modules/nf-core/bowtie2/align/main'
-include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_HOST_REFERENCE } from '../modules/nf-core/bowtie2/align/main'
 include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_NEW_REFERENCE } from '../modules/nf-core/bowtie2/align/main'
 include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_FINAL_REFERENCE } from '../modules/nf-core/bowtie2/align/main'
-include { BWA_INDEX } from '../modules/nf-core/bwa/index/main'
 include { BBMAP_BBDUK as BBDUK_R } from '../modules/nf-core/bbmap/bbduk/main'
 include { BBMAP_BBDUK as BBDUK_L } from '../modules/nf-core/bbmap/bbduk/main'
 include { BBMAP_BBDUK as BBDUK_Q } from '../modules/nf-core/bbmap/bbduk/main'
 include { FASTQC as FASTQC_RAW } from '../modules/nf-core/fastqc/main'
 include { FASTQC as FASTQC_TRIMMED } from '../modules/nf-core/fastqc/main'
 include { SEQTK_SAMPLE } from '../modules/nf-core/seqtk/sample/main'
+include { KRAKEN2_KRAKEN2 } from '../modules/nf-core/kraken2/kraken2/main'
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,12 +103,11 @@ def multiqc_report = []
 
 workflow RAD {
 
-    ch_versions = Channel.empty()
+    //ch_versions = Channel.empty()
 
     INPUT_CHECK (
         ch_input
     )
-    ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
     GENBANK_TO_FASTA (
         ch_genbank_ref,
@@ -127,8 +121,7 @@ workflow RAD {
 
     ch_bowtie2_index = BOWTIE2_BUILD_REFERENCE.out.index.map{ [it[1]] }
 
-    
-    ch_raw_reads = INPUT_CHECK.out.reads
+    ch_raw_reads = INPUT_CHECK.out.reads.map{ [it[0], it[1]] }
 
     if (params.sub_sample) {
         SEQTK_SAMPLE (
@@ -156,26 +149,18 @@ workflow RAD {
         []
     )
 
-    ch_trimmed_reads = BBDUK_Q.out.reads
+    KRAKEN2_KRAKEN2 (
+        BBDUK_Q.out.reads,
+        params.kraken_host_db,
+        true,  // save fastqs
+        false  // don't report      
+    )
 
-    if (params.bowtie2_host_index) {
-    
-        BOWTIE2_ALIGN_HOST_REFERENCE (
-            BBDUK_Q.out.reads,
-            BBDUK_Q.out.reads.map { [it[0]] }.combine(ch_bowtie2_host_index),
-            true,  // save_unaligned, i.e. non-host reads
-            false  // don't sort host aligned reads      
-        )
+    BBMAP_REPAIR (
+        KRAKEN2_KRAKEN2.out.unclassified_reads_fastq,
+    )    
 
-        ch_trimmed_reads = BOWTIE2_ALIGN_HOST_REFERENCE.out.fastq
-    }
-
-    if (params.scrub_human) {
-        SRA_SCRUB_HUMAN (
-            ch_trimmed_reads
-        )
-        ch_trimmed_reads = SRA_SCRUB_HUMAN.out.reads
-    }
+    ch_trimmed_reads = BBMAP_REPAIR.out.fastqs
 
 	BOWTIE2_ALIGN_REFERENCE (
         ch_trimmed_reads,
@@ -186,6 +171,28 @@ workflow RAD {
 
     FASTQC_TRIMMED (
         ch_trimmed_reads
+    )
+
+    PICARD_ADDORREPLACEREADGROUPS (
+        BOWTIE2_ALIGN_REFERENCE.out.bam,
+        [[],[]],
+        [[],[]]
+    )
+
+    GATK_REALIGNERTARGETCREATOR (
+        PICARD_ADDORREPLACEREADGROUPS.out.bam,
+        PICARD_ADDORREPLACEREADGROUPS.out.bam.map{ [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta),
+        PICARD_ADDORREPLACEREADGROUPS.out.bam.map{ [it[0]] }.combine(GENBANK_TO_FASTA.out.fai),
+        PICARD_ADDORREPLACEREADGROUPS.out.bam.map{ [it[0]] }.combine(GENBANK_TO_FASTA.out.dict),
+        [[],[]]
+    )
+
+    GATK_INDELREALIGNER (
+        PICARD_ADDORREPLACEREADGROUPS.out.bam.join(GATK_REALIGNERTARGETCREATOR.out.intervals),
+        PICARD_ADDORREPLACEREADGROUPS.out.bam.map{ [it[0]] }.combine(GENBANK_TO_FASTA.out.fasta),
+        PICARD_ADDORREPLACEREADGROUPS.out.bam.map{ [it[0]] }.combine(GENBANK_TO_FASTA.out.fai),
+        PICARD_ADDORREPLACEREADGROUPS.out.bam.map{ [it[0]] }.combine(GENBANK_TO_FASTA.out.dict),
+        [[],[]]
     )
 
     BBMAP_DEDUPE (
@@ -271,6 +278,10 @@ workflow RAD {
         )
     }
 
+    FASTA_INDEX (
+        MUGSY.out.new_ref
+    )    
+
     BOWTIE2_BUILD_NEW_REFERENCE (
         MUGSY.out.new_ref
     )
@@ -285,12 +296,47 @@ workflow RAD {
         true
     )
 
+    PICARD_ADDORREPLACEREADGROUPS_NEW_REF (
+        BOWTIE2_ALIGN_NEW_REFERENCE.out.bam,
+        [[],[]],
+        [[],[]]
+    )
+
+    GATK_REALIGNERTARGETCREATOR_NEW_REF (
+        PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam,
+        PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam.join(FASTA_INDEX.out.fasta).map{ [it[0],it[3]] },
+        PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam.join(FASTA_INDEX.out.fai).map{ [it[0],it[3]] },
+        PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam.join(FASTA_INDEX.out.dict).map{ [it[0],it[3]] },
+        [[],[]]
+    )
+
+    GATK_INDELREALIGNER_NEW_REF (
+        PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam.join(GATK_REALIGNERTARGETCREATOR_NEW_REF.out.intervals),
+        PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam.join(FASTA_INDEX.out.fasta).map{ [it[0],it[3]] },
+        PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam.join(FASTA_INDEX.out.fai).map{ [it[0],it[3]] },
+        PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam.join(FASTA_INDEX.out.dict).map{ [it[0],it[3]] },
+        [[],[]]
+    )  
+
     IVAR_CONSENSUS (
-        BOWTIE2_ALIGN_NEW_REFERENCE.out.bam
+        GATK_INDELREALIGNER_NEW_REF.out.bam.map{ [it[0], it[1]] }
     )
 
     BOWTIE2_BUILD_FINAL_REFERENCE (
-    IVAR_CONSENSUS.out.consensus
+       IVAR_CONSENSUS.out.consensus
+    )
+
+    IVAR_VARIANTS (
+        GATK_INDELREALIGNER.out.bam.map{ [it[0], it[1]] },
+        GENBANK_TO_FASTA.out.fasta,
+        GENBANK_TO_FASTA.out.genes_gff
+    )
+
+    FORMAT_VARIANTS (
+        IVAR_VARIANTS.out.variants,
+        GENBANK_TO_FASTA.out.fasta,
+        GENBANK_TO_FASTA.out.genes_gff,
+        params.edit_ivar_variants
     )
 
     ch_trimmed_reads_passed
@@ -319,18 +365,6 @@ workflow RAD {
         .map { meta, rlog, qlog, bam, empty, reads_mapped -> [ meta, rlog, qlog, bam, empty, reads_mapped] }
         .set {ch_summary_failed}
 
-    IVAR_VARIANTS (
-        BOWTIE2_ALIGN_REFERENCE.out.bam,
-        GENBANK_TO_FASTA.out.fasta,
-        GENBANK_TO_FASTA.out.genes_gff
-    )
-
-    FORMAT_VARIANTS (
-        IVAR_VARIANTS.out.variants,
-        GENBANK_TO_FASTA.out.genes_gff,
-        params.edit_ivar_variants
-    )
-    
     SUMMARY (
         ch_summary_passed
     )
@@ -349,32 +383,6 @@ workflow RAD {
         true
     )
 
-    // CUSTOM_DUMPSOFTWAREVERSIONS (
-    //     ch_versions.unique().collectFile(name: 'collated_versions.yml')
-    // )
-
-    // //
-    // // MODULE: MultiQC
-    // //
-    // workflow_summary    = WorkflowCmv.paramsSummaryMultiqc(workflow, summary_params)
-    // ch_workflow_summary = Channel.value(workflow_summary)
-
-    // methods_description    = WorkflowCmv.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description)
-    // ch_methods_description = Channel.value(methods_description)
-
-    // ch_multiqc_files = Channel.empty()
-    // ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    // ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
-    // ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-    // ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
-
-    // MULTIQC (
-    //     ch_multiqc_files.collect(),
-    //     ch_multiqc_config.toList(),
-    //     ch_multiqc_custom_config.toList(),
-    //     ch_multiqc_logo.toList()
-    // )
-    // multiqc_report = MULTIQC.out.report.toList()
 }
 
 /*

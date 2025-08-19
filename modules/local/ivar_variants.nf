@@ -2,7 +2,7 @@ process IVAR_VARIANTS {
     tag "$meta.id"
     label 'process_high'
 
-    container "docker.io/sereewit/ivar:1.4.2_49079e2"
+    container "quay.io/jefffurlong/ivar:1.4.4"
 
 
     input:
@@ -28,7 +28,7 @@ process IVAR_VARIANTS {
         ${bam} \\
         | ivar \\
             variants \\
-            -q ${params.ivar_variants_q} -t ${params.ivar_variants_t} -m ${params.ivar_variants_m} \\
+            -q ${params.ivar_variants_q} -t ${params.ivar_variants_t} -m ${params.ivar_variants_m} -G \\
             -g ${gff} \\
             -r ${ref} \\
             -p ${prefix}

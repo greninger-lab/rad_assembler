@@ -1,5 +1,5 @@
 # base image
-FROM python:3.7-bullseye
+FROM quay.io/bedrock/ubuntu:jammy-20240808
 
 # install blast
 RUN apt-get update \
@@ -44,7 +44,7 @@ RUN /usr/local/bin/python3.7 setup.py install
 
 WORKDIR /
 
-RUN wget http://cab.spbu.ru/files/release3.13.0/SPAdes-3.13.0-Linux.tar.gz
+RUN wget https://github.com/ablab/spades/releases/download/v3.13.0/SPAdes-3.13.0-Linux.tar.gz
 RUN tar -xzf SPAdes-3.13.0-Linux.tar.gz
 
 ENV PATH=/SPAdes-3.13.0-Linux/bin:$PATH:/root/miniconda/bin
