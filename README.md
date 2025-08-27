@@ -26,7 +26,7 @@ Install [`Docker`](https://docs.docker.com/engine/installation/)
 | `--kraken_host_db /path/to/kraken2_human_db`  | (required) path to Kraken2 human database |
 | `--genbank_ref <file>`        | (required) path to a GenBank (.gb) format reference file| 
 | `--spades_flag <key>`        | (optional) default key is "meta", alternatives are "careful" or "unicycler" |
-| `--find_reference <key>`     | (optional but recommended for supported species) available keys are "hsv1", "hsv2" or "cmv") |
+| `--find_reference <key>`     | (optional) available keys are "hsv1", "hsv2" or "cmv" |
 | `-profile docker`                         | (required) |
 | `-c /path/to/your/custom.config`          | (optional) used specify a custom configuration file (see [Nextflow docs](https://www.nextflow.io/docs/latest/config.html) |
 

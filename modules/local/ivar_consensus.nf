@@ -2,7 +2,7 @@ process IVAR_CONSENSUS {
     tag "$meta.id"
     label 'process_high'
 
-    container "quay.io/biocontainers/ivar:1.3.1--hecb563c_3"
+    container "quay.io/jefffurlong/ivar:1.4.4"
 
 
     input:

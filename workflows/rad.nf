@@ -302,19 +302,30 @@ workflow RAD {
         [[],[]]
     )
 
+    PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam
+    .join(FASTA_INDEX.out.fasta)
+    .join(FASTA_INDEX.out.fai)
+    .join(FASTA_INDEX.out.dict).set{ch_new_ref}
+
     GATK_REALIGNERTARGETCREATOR_NEW_REF (
-        PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam,
-        PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam.join(FASTA_INDEX.out.fasta).map{ [it[0],it[3]] },
-        PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam.join(FASTA_INDEX.out.fai).map{ [it[0],it[3]] },
-        PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam.join(FASTA_INDEX.out.dict).map{ [it[0],it[3]] },
+        ch_new_ref.map{[it[0],it[1],it[2]]},
+        ch_new_ref.map{[it[0],it[3]]},
+        ch_new_ref.map{[it[0],it[4]]},
+        ch_new_ref.map{[it[0],it[5]]},
         [[],[]]
     )
 
+    PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam
+    .join(GATK_REALIGNERTARGETCREATOR_NEW_REF.out.intervals)
+    .join(FASTA_INDEX.out.fasta)
+    .join(FASTA_INDEX.out.fai)
+    .join(FASTA_INDEX.out.dict).set{ch_new_ref_interval}
+
     GATK_INDELREALIGNER_NEW_REF (
-        PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam.join(GATK_REALIGNERTARGETCREATOR_NEW_REF.out.intervals),
-        PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam.join(FASTA_INDEX.out.fasta).map{ [it[0],it[3]] },
-        PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam.join(FASTA_INDEX.out.fai).map{ [it[0],it[3]] },
-        PICARD_ADDORREPLACEREADGROUPS_NEW_REF.out.bam.join(FASTA_INDEX.out.dict).map{ [it[0],it[3]] },
+        ch_new_ref_interval.map{[it[0],it[1],it[2],it[3]]},
+        ch_new_ref_interval.map{[it[0],it[4]]},
+        ch_new_ref_interval.map{[it[0],it[5]]},
+        ch_new_ref_interval.map{[it[0],it[6]]},
         [[],[]]
     )  
 
