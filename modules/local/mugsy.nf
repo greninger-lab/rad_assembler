@@ -89,7 +89,7 @@ process MUGSY {
         print
         next
     }
-    { seq = seq $0 }
+    { seq = seq \$0 }
     END {
         if (seq) {
         gsub("-", "", seq)
