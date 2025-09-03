@@ -20,7 +20,7 @@ process MUGSY {
     tuple val(meta), path("*.sam"), emit: sam
     tuple val(meta), path("*.bam"), emit: bam
     tuple val(meta), path("*.fasta"), emit: fasta
-    tuple val(meta), path("*new_ref_consensus.fasta"), emit: new_ref
+    tuple val(meta), path("*new_ref_consensus_clean.fasta"), emit: new_ref
     path "versions.yml"           , emit: versions
 
     when:
@@ -76,7 +76,30 @@ process MUGSY {
 
     fi
 
-
+    awk '
+    /^>/ {
+        if (seq) {
+        gsub("-", "", seq)
+        while (length(seq) > 0) {
+            print substr(seq, 1, 80)
+            seq = substr(seq, 81)
+        }
+        seq = ""
+        }
+        print
+        next
+    }
+    { seq = seq $0 }
+    END {
+        if (seq) {
+        gsub("-", "", seq)
+        while (length(seq) > 0) {
+            print substr(seq, 1, 80)
+            seq = substr(seq, 81)
+        }
+        }
+    }
+    ' "${meta.id}_new_ref_consensus.fasta" > "${meta.id}_new_ref_consensus_clean.fasta"
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
