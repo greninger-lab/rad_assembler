@@ -1,6 +1,6 @@
 process MUGSY {
     tag "$meta.id"
-    label "process_high"
+    label "process_medium"
 
     container "quay.io/jefffurlong/mugsy_make_reference"
 

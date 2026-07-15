@@ -1,6 +1,6 @@
 process LAST_MAFCONVERT {
     tag "$meta.id"
-    label 'process_high'
+    label 'process_medium'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/last:1418--h5b5514e_0' :

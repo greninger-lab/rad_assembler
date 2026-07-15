@@ -1,6 +1,6 @@
 process IVAR_VARIANTS {
     tag "$meta.id"
-    label 'process_high'
+    label 'process_medium'
 
     container "quay.io/sereewit/ivar:1.4.2_49079e2"
 

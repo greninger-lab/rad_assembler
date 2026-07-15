@@ -1,6 +1,6 @@
 process BOWTIE2_BUILD_INDEX {
     tag "$fasta"
-    label 'process_high'
+    label 'process_medium'
 
     //conda "bioconda::bowtie2=2.4.4"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
