@@ -1,6 +1,6 @@
 process BWA_MEM_ALIGN {
     tag "$meta.id"
-    label 'process_high'
+    label 'process_medium'
 
     container "quay.io/hdc-workflows/bwa-samtools:4f00123"
 

@@ -1,6 +1,6 @@
 process UNICYCLER {
     tag "$meta.id"
-    label 'process_high'
+    label 'process_medium'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/unicycler:0.4.8--py38h8162308_3' :

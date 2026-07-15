@@ -1,6 +1,6 @@
 process SPADES {
     tag "$meta.id"
-    label 'process_high'
+    label 'process_medium'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/spades:3.15.5--h95f258a_1' :

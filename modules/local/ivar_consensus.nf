@@ -1,6 +1,6 @@
 process IVAR_CONSENSUS {
     tag "$meta.id"
-    label 'process_high'
+    label 'process_medium'
 
     container "quay.io/biocontainers/ivar:1.3.1--hecb563c_3"
 
