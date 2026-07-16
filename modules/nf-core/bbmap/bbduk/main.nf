@@ -25,7 +25,7 @@ process BBMAP_BBDUK {
     def trimmed  = meta.single_end ? "out=${prefix}.fastq.gz" : "out1=${prefix}_1.fastq.gz out2=${prefix}_2.fastq.gz"
     def contaminants_fa = contaminants ? "ref=$contaminants" : ''
     """
-    maxmem=\$(echo \"$task.memory\"| sed 's/ GB/g/g')
+    maxmem=\$(echo \"$task.memory\" | sed 's/ GB//g' | awk '{printf "%.0fg\\n", \$1 * 0.85}')
     bbduk.sh \\
         -Xmx\$maxmem \\
         $raw \\
