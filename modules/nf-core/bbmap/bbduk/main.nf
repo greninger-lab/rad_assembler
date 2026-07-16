@@ -33,7 +33,7 @@ process BBMAP_BBDUK {
         threads=$task.cpus \\
         $args \\
         $contaminants_fa \\
-        &> ${prefix}.bbduk.log
+        2>&1 | tee ${prefix}.bbduk.log
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bbmap: \$(bbversion.sh | grep -v "Duplicate cpuset")
